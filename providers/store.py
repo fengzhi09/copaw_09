@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -29,6 +31,33 @@ def get_providers_json_path() -> Path:
 
 
 # ---------------------------------------------------------------------------
+# Environment variable expansion
+# ---------------------------------------------------------------------------
+
+def _expand_env_vars(value: str) -> str:
+    """Expand ${VAR} and $VAR patterns in string values."""
+    if not isinstance(value, str):
+        return value
+    
+    def replacer(match):
+        var_name = match.group(1) or match.group(2)
+        return os.getenv(var_name, match.group(0))
+    
+    return re.sub(r'\$\{(\w+)\}|\$(\w+)', replacer, value)
+
+
+def _expand_config(config: dict) -> dict:
+    """Recursively expand environment variables in config dict."""
+    if isinstance(config, dict):
+        return {k: _expand_config(v) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [_expand_config(item) for item in config]
+    elif isinstance(config, str):
+        return _expand_env_vars(config)
+    return config
+
+
+# ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
@@ -47,6 +76,8 @@ def _parse_new_format(raw: dict):
     providers: dict[str, ProviderSettings] = {}
     for key, value in raw.get("providers", {}).items():
         if isinstance(value, dict):
+            # Expand environment variables
+            value = _expand_config(value)
             providers[key] = ProviderSettings.model_validate(
                 value,
             )
@@ -73,6 +104,8 @@ def _parse_legacy_format(raw: dict):
         if not isinstance(value, dict):
             continue
         model_val = value.pop("model", "")
+        # Expand environment variables
+        value = _expand_config(value)
         providers[key] = ProviderSettings.model_validate(value)
         if key == old_active and model_val:
             old_model = model_val
@@ -115,6 +148,34 @@ def _ensure_all_providers(
             _ensure_base_url(providers[pid], defn)
 
 
+def _load_from_config_json() -> tuple[dict, ModelSlotConfig]:
+    """Load providers configuration from config.json if present.
+    
+    Returns (providers dict, active_llm).
+    """
+    # Try to find config.json in various locations
+    possible_paths = [
+        Path(os.environ.get("COPAW_WORKING_DIR", "~/.copaw")) / "config.json",
+        Path.home() / ".copaw" / "config.json",
+        Path("/opt/ai_works/copaw/config.json"),
+    ]
+    
+    for config_path in possible_paths:
+        config_path = config_path.expanduser()
+        if config_path.exists():
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+                
+                if "providers" in config:
+                    print(f"Loading providers from config.json: {config_path}")
+                    return _parse_new_format(config["providers"])
+            except Exception as e:
+                print(f"Failed to load config.json: {e}")
+    
+    return {}, ModelSlotConfig()
+
+
 # ---------------------------------------------------------------------------
 # Load / Save
 # ---------------------------------------------------------------------------
@@ -123,14 +184,25 @@ def _ensure_all_providers(
 def load_providers_json(
     path: Optional[Path] = None,
 ) -> ProvidersData:
-    """Load providers.json, creating/repairing as needed."""
+    """Load providers.json, creating/repairing as needed.
+    
+    Also checks config.json for providers configuration.
+    """
     if path is None:
         path = get_providers_json_path()
 
     providers: dict[str, ProviderSettings] = {}
     active_llm = ModelSlotConfig()
 
-    if path.is_file():
+    # First, try to load from config.json
+    config_providers, config_active_llm = _load_from_config_json()
+    
+    if config_providers:
+        # Use providers from config.json
+        providers = config_providers
+        active_llm = config_active_llm
+    elif path.is_file():
+        # Fallback to providers.json
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 raw: dict = json.load(fh)
@@ -151,7 +223,11 @@ def load_providers_json(
         providers=providers,
         active_llm=active_llm,
     )
-    save_providers_json(data, path)
+    
+    # Only save to providers.json if not loaded from config.json
+    if not config_providers:
+        save_providers_json(data, path)
+    
     return data
 
 

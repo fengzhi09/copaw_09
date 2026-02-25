@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import re
 from pathlib import Path
 
 from agentscope.mcp import StdIOStatefulClient
@@ -21,13 +22,27 @@ from ...constant import WORKING_DIR
 logger = logging.getLogger(__name__)
 
 
+def _expand_env_vars(config: dict) -> dict:
+    """Recursively expand ${VAR} and $VAR patterns in config values."""
+    if isinstance(config, dict):
+        return {k: _expand_env_vars(v) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [_expand_env_vars(item) for item in config]
+    elif isinstance(config, str):
+        # Replace ${VAR} and $VAR with environment variables
+        def replacer(match):
+            var_name = match.group(1) or match.group(2)
+            return os.getenv(var_name, match.group(0))
+        return re.sub(r'\$\{(\w+)\}|\$(\w+)', replacer, config)
+    return config
+
+
 class AgentRunner(Runner):
     def __init__(self) -> None:
         super().__init__()
         self.framework_type = "agentscope"
         self._chat_manager = None  # Store chat_manager reference
-        self._tavily_search_client = None
-
+        self._mcp_clients = {}  # Store all MCP clients by name
         self.memory_manager: MemoryManager | None = None
 
     def set_chat_manager(self, chat_manager):
@@ -37,6 +52,82 @@ class AgentRunner(Runner):
             chat_manager: ChatManager instance
         """
         self._chat_manager = chat_manager
+
+    def _load_mcp_config(self) -> dict:
+        """Load MCP servers configuration from config.json."""
+        config_path = WORKING_DIR / "config.json"
+        if not config_path.exists():
+            logger.debug(f"Config file not found: {config_path}")
+            return {}
+        
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            
+            mcp_config = config.get("mcpServers", {})
+            # Expand environment variables
+            return _expand_env_vars(mcp_config)
+        except Exception as e:
+            logger.warning(f"Failed to load MCP config: {e}")
+            return {}
+
+    async def _init_mcp_clients(self):
+        """Initialize MCP clients from config."""
+        mcp_config = self._load_mcp_config()
+        
+        if not mcp_config:
+            logger.debug("No MCP servers configured")
+            # Fallback to old tavily-mcp
+            await self._init_tavily_mcp()
+            return
+
+        for name, config in mcp_config.items():
+            if not config.get("enabled", True):
+                logger.info(f"MCP server '{name}' is disabled, skipping")
+                continue
+            
+            command = config.get("command", "npx")
+            args = config.get("args", [])
+            env = config.get("env", {})
+            
+            # Skip if command is empty
+            if not command:
+                logger.warning(f"MCP server '{name}' has no command, skipping")
+                continue
+            
+            try:
+                logger.info(f"Initializing MCP server: {name}")
+                client = StdIOStatefulClient(
+                    name=f"{name}_mcp",
+                    command=command,
+                    args=args,
+                    env=env,
+                )
+                await client.connect()
+                self._mcp_clients[name] = client
+                logger.info(f"MCP server '{name}' connected successfully")
+            except Exception as e:
+                logger.warning(f"MCP server '{name}' connect failed: {e}")
+
+    async def _init_tavily_mcp(self):
+        """Legacy: Initialize tavily-mcp (for backward compatibility)."""
+        tavily_key = os.getenv("TAVILY_API_KEY", "")
+        if not tavily_key:
+            logger.debug("TAVILY_API_KEY not set, skipping tavily-mcp")
+            return
+        
+        try:
+            client = StdIOStatefulClient(
+                name="tavily_mcp",
+                command="npx",
+                args=["-y", "tavily-mcp@latest"],
+                env={"TAVILY_API_KEY": tavily_key},
+            )
+            await client.connect()
+            self._mcp_clients["tavily"] = client
+            logger.info("tavily-mcp connected successfully")
+        except Exception as e:
+            logger.debug(f"tavily-mcp connect failed: {e}")
 
     async def query_handler(
         self,
@@ -71,9 +162,9 @@ class AgentRunner(Runner):
             channel=channel,
             working_dir=str(WORKING_DIR),
         )
-        mcp_clients = []
-        if self._tavily_search_client is not None:
-            mcp_clients.append(self._tavily_search_client)
+        
+        # Collect all MCP clients
+        mcp_clients = list(self._mcp_clients.values())
 
         agent = CoPawAgent(
             env_context=env_context,
@@ -92,7 +183,7 @@ class AgentRunner(Runner):
             if len(msgs) > 0:
                 content = msgs[0].get_text_content()
                 if content:
-                    name = msgs[0].get_text_content()[:10]
+                    name = content[:10]
                 else:
                     name = "多媒体消息"
 
@@ -151,17 +242,8 @@ class AgentRunner(Runner):
         session_dir = str(WORKING_DIR / "sessions")
         self.session = SafeJSONSession(save_dir=session_dir)
 
-        tavily_search_client = StdIOStatefulClient(
-            name="tavily_mcp",
-            command="npx",
-            args=["-y", "tavily-mcp@latest"],
-            env={"TAVILY_API_KEY": os.getenv("TAVILY_API_KEY", "")},
-        )
-        try:
-            await tavily_search_client.connect()
-            self._tavily_search_client = tavily_search_client
-        except Exception as e:
-            logger.debug(f"tavily-mcp connect failed: {e}")
+        # Initialize MCP clients from config
+        await self._init_mcp_clients()
 
         try:
             if self.memory_manager is None:
@@ -177,14 +259,13 @@ class AgentRunner(Runner):
         Shutdown handler.
         """
 
-        for client in (self._tavily_search_client,):
-            if client is None:
-                continue
+        for name, client in self._mcp_clients.items():
             try:
                 await client.close()
+                logger.info(f"MCP server '{name}' closed")
             except Exception as e:
-                logger.error(f"Error closing MCP client: {e}")
-        self._tavily_search_client = None
+                logger.error(f"Error closing MCP client '{name}': {e}")
+        self._mcp_clients.clear()
 
         try:
             await self.memory_manager.close()
