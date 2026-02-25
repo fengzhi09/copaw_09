@@ -105,8 +105,43 @@ copaw/
 ├── console/            # Web 控制台前端
 ├── envs/               # 环境封装
 ├── providers/          # 模型提供商
-└── utils/              # 工具函数
+├── utils/              # 工具函数
+├── copaw_mgr.py        # Copaw 生命周期管理脚本
+├── README.md           # 项目说明
+├── ROADMAP.md          # 发展规划
+└── ARCHITECTURE.md     # 架构设计
 ```
+
+### copaw_mgr.py 管理脚本
+
+Copaw 生命周期管理工具，配置文件位于 `~/.copaw_mgr.yaml`：
+
+```bash
+# 初始化（首次配置）
+python3 copaw_mgr.py init
+
+# 启动服务
+python3 copaw_mgr.py start
+
+# 停止服务
+python3 copaw_mgr.py stop [--force]
+
+# 重启服务
+python3 copaw_mgr.py restart
+
+# 查看状态
+python3 copaw_mgr.py status
+
+# 查看日志
+python3 copaw_mgr.py log
+```
+
+**功能特性**：
+- 配置文件集中管理（~/.copaw_mgr.yaml）
+- 自动同步配置到 config.json
+- 日志轮转与清理
+- 配置一致性检查
+- 支持自定义模型和 API
 
 ---
 
