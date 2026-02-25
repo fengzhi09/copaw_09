@@ -51,8 +51,11 @@ CoPaw 是一款**个人助理型产品**，部署在你自己的环境中。
 pip install copaw
 
 # 或从源码安装
-pip install -e ".[dev]"
-cd console && npm ci && npm run build
+# git clone https://github.com/agentscope-ai/CoPaw.git // 来自 https://pypi.org/project/copaw
+# cd CoPaw
+ git clone https://github.com/fengzhi09/copaw_09
+cd copaw_09
+pip install -e .
 
 # 启动服务
 copaw app
