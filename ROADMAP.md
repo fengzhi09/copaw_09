@@ -10,15 +10,36 @@
 
 ---
 
-## 版本规划
+## 版本历史
 
-### Phase 1: 基础能力完善 (v0.1.x)
-- [x] 多通道支持（钉钉、飞书、QQ、Discord、iMessage）
-- [x] 内置 Skills（PDF、Office、新闻、文件阅读、邮件）
-- [x] 定时任务 (cron)
-- [x] 心跳 (Heartbeat)
-- [x] Web 控制台
+| 版本 | 日期 | 说明 |
+|------|------|------|
+| 0.0.2 | 2026-02-18 | 当前版本，从 PyPI 提取 |
+
+---
+
+## 当前功能 (v0.0.2)
+
+### 已实现
+- ✅ 多通道支持（飞书、钉钉、QQ、Discord、iMessage、Console）
+- ✅ 9 个内置 Skills（pdf, xlsx, docx, pptx, news, himalaya, cron, browser_visible, file_reader）
+- ✅ Agent 工具集（file_io, shell, browser, memory 等）
+- ✅ 记忆系统（memory/）
+- ✅ 定时任务（crons/）
+- ✅ CLI 命令行工具
+- ✅ 配置管理
+- ✅ 模型提供商支持
+
+---
+
+## 发展规划
+
+### Phase 1: 完善基础能力 (v0.1.x)
+
 - [ ] 完善文档和示例
+- [ ] 优化 Skills 加载机制
+- [ ] 增强记忆系统
+- [ ] 完善错误处理和日志
 
 ### Phase 2: 能力扩展 (v0.2.x)
 
@@ -32,14 +53,8 @@
   - [ ] minimax-mcp
   - [ ] feishu-bridge
   - [ ] feishu-doc / feishu-sheets / feishu-bitable
-  - [ ] 更多飞书/语音相关 Skills
 - [ ] Skills 商店发现与安装
 - [ ] 自定义 Skills 仓库支持
-
-#### 记忆系统增强
-- [ ] 向量记忆存储
-- [ ] 语义搜索
-- [ ] 长期记忆与短期记忆分层
 
 ### Phase 3: 多 Agent 架构 (v0.3.x)
 
@@ -47,7 +62,7 @@
 - [ ] Agent 编排与工作流
 - [ ] Agent 间通信协议
 - [ ] 任务分发与聚合
-- [ ] Agent 模板市场
+- [ ] Agent 模板
 
 #### 团队协作
 - [ ] 多用户支持
@@ -74,13 +89,12 @@
 - [ ] 微信企业版
 - [ ] Slack
 - [ ] Telegram
-- [ ] 邮件协议增强
 
 #### 更多模型
 - [ ] OpenAI API 兼容
 - [ ] Anthropic Claude
 - [ ] 国产大模型（通义千问、文心一言、智谱清言）
-- [ ] 本地模型 (Ollama, LM Studio)
+- [ ] 本地模型 (Ollama)
 
 #### 开发者生态
 - [ ] SDK / API 文档
@@ -96,7 +110,7 @@
 |--------|------|----------|
 | P0 | MCP 支持 | v0.2.0 |
 | P0 | ClawHub Skills 集成 | v0.2.0 |
-| P1 | 向量记忆 | v0.2.1 |
+| P1 | 记忆系统增强 | v0.1.x |
 | P1 | 多 Agent 协作 | v0.3.0 |
 | P2 | 企业版基础 | v0.4.0 |
 | P2 | Credit Plan | v0.4.1 |
@@ -107,7 +121,7 @@
 
 ## 贡献指南
 
-欢迎提交 Issue 和 PR！请参考 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+欢迎提交 Issue 和 PR！
 
 ---
 

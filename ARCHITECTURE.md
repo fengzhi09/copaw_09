@@ -8,34 +8,47 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         CoPaw Core                              │
+│                         CoPaw Core (v0.0.2)                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
-│  │   Channels   │    │   Agents     │    │    Crons     │      │
-│  │  (钉钉/飞书)  │    │  (ReAct)     │    │  (定时任务)  │      │
-│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘      │
-│         │                   │                   │               │
-│         └───────────────────┼───────────────────┘               │
-│                             │                                    │
-│                      ┌──────▼──────┐                            │
-│                      │   Router    │                            │
-│                      │  (消息路由)  │                            │
-│                      └──────┬──────┘                            │
-│                             │                                    │
-│         ┌───────────────────┼───────────────────┐              │
-│         │                   │                   │               │
-│  ┌──────▼──────┐    ┌──────▼──────┐    ┌──────▼──────┐       │
-│  │   Skills    │    │   Memory    │    │   Tools     │       │
-│  │  (能力)     │    │   (记忆)    │    │  (工具)     │       │
-│  └─────────────┘    └─────────────┘    └─────────────┘       │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐     │
+│  │   Channels   │    │    Crons     │    │   Console    │     │
+│  │  (6 channels)│    │  (定时任务)  │    │  (Web UI)   │     │
+│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘     │
+│         │                    │                    │              │
+│         └────────────────────┼────────────────────┘              │
+│                              │                                   │
+│                      ┌───────▼───────┐                          │
+│                      │    Runner     │                          │
+│                      │ (AgentRunner) │                          │
+│                      └───────┬───────┘                          │
+│                              │                                   │
+│         ┌────────────────────┼────────────────────┐            │
+│         │                    │                    │              │
+│  ┌──────▼──────┐    ┌───────▼───────┐    ┌──────▼──────┐   │
+│  │   Skills    │    │    Memory     │    │   Tools     │   │
+│  │  (9 built-in)│   │   (记忆)     │    │  (Agent)   │   │
+│  └─────────────┘    └───────────────┘    └─────────────┘   │
+│                                                                 │
+│                              │                                   │
+│                      ┌───────▼───────┐                          │
+│                      │    Agent      │                          │
+│                      │  (CoPawAgent) │                          │
+│                      │   (ReAct)     │                          │
+│                      └───────┬───────┘                          │
+│                              │                                   │
+│                              ▼                                   │
+│                 ┌────────────────────────┐                      │
+│                 │   Model Providers      │                      │
+│                 │ (DashScope/自定义)    │                      │
+│                 └────────────────────────┘                      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
                  ┌────────────────────────┐
-                 │    Model Provider      │
-                 │ (OpenAI/Claude/...)    │
+                 │   FastAPI Server      │
+                 │    (AgentScope Runtime)│
                  └────────────────────────┘
 ```
 
@@ -43,90 +56,134 @@
 
 ## 核心模块
 
-### 1. Channels (频道层)
+### 1. CLI (`cli/`)
 
-负责与各聊天平台的双向通信：
+命令行工具入口：
+
+| 文件 | 功能 |
+|------|------|
+| `main.py` | CLI 入口，使用 Click |
+| `app_cmd.py` | 启动应用服务 |
+| `init_cmd.py` | 初始化工作目录 |
+| `channels_cmd.py` | 频道管理 |
+| `cron_cmd.py` | 定时任务管理 |
+| `skills_cmd.py` | Skills 管理 |
+| `env_cmd.py` | 环境变量管理 |
+| `providers_cmd.py` | 模型提供商管理 |
+
+### 2. App (`app/`)
+
+应用主程序，基于 FastAPI + AgentScope Runtime：
 
 | 模块 | 文件 | 功能 |
 |------|------|------|
-| base | `app/channels/base.py` | 频道基类，定义接口 |
-| dingtalk | `app/channels/dingtalk.py` | 钉钉 WebHook/WebSocket |
-| feishu | `app/channels/feishu.py` | 飞书 WebSocket/消息卡片 |
-| qq | `app/channels/qq.py` | QQ 协议通信 |
-| discord | `app/channels/discord_.py` | Discord Bot API |
-| imessage | `app/channels/imessage.py` | macOS iMessage |
-| console | `app/channels/console.py` | Web 控制台 |
-| manager | `app/channels/manager.py` | 频道管理 |
+| _app.py | `_app.py` | FastAPI 应用入口，创建 AgentApp |
+| channels | `channels/` | 频道实现 |
+| crons | `crons/` | 定时任务 |
+| runner | `runner/` | AgentRunner 运行器 |
+| routers | `routers/` | API 路由 |
 
-### 2. Agents (智能体层)
+#### Channels (`app/channels/`)
 
-核心推理与决策：
+| 文件 | 频道 |
+|------|------|
+| `feishu.py` | 飞书 |
+| `dingtalk.py` | 钉钉 |
+| `qq.py` | QQ |
+| `discord_.py` | Discord |
+| `imessage.py` | iMessage (Mac) |
+| `console.py` | Web Console |
+| `base.py` | 频道基类 |
+| `manager.py` | 频道管理器 |
 
-| 模块 | 文件 | 功能 |
-|------|------|------|
-| react_agent | `agents/react_agent.py` | ReAct 推理 Agent |
-| skills_manager | `agents/skills_manager.py` | Skills 加载与管理 |
-| prompt | `agents/prompt.py` | Prompt 模板 |
-| memory | `agents/memory/` | 记忆系统 |
-| tools | `agents/tools/` | 工具注册 |
-| md_files | `agents/md_files/` | Markdown 文件处理 |
+#### Crons (`app/crons/`)
 
-### 3. Skills (能力层)
+| 文件 | 功能 |
+|------|------|
+| `manager.py` | Cron 管理器 |
+| `executor.py` | 任务执行器 |
+| `heartbeat.py` | 心跳/自检 |
+| `api.py` | Cron API |
 
-可插拔的能力模块：
+### 3. Agents (`agents/`)
+
+Agent 核心实现：
+
+| 文件 | 功能 |
+|------|------|
+| `react_agent.py` | CoPawAgent (ReAct 推理) |
+| `skills_manager.py` | Skills 加载与管理 |
+| `prompt.py` | Prompt 模板 |
+| `schema.py` | 数据结构定义 |
+| `utils.py` | 工具函数 |
+
+#### Skills (`agents/skills/`)
+
+内置 Skills (9个)：
 
 ```
 skills/
-├── active_skills/      # 内置 Skills（只读）
-│   ├── pdf/
-│   ├── xlsx/
-│   ├── docx/
-│   ├── pptx/
-│   ├── file_reader/
-│   ├── browser_visible/
-│   ├── cron/
-│   ├── news/
-│   ├── himalaya/
-│   └── ...
-└── ext_skills/         # 用户扩展 Skills
-    ├── feishu-doc/
-    ├── feishu-wiki/
-    └── ...
+├── pdf/           # PDF 处理
+├── xlsx/          # Excel 处理
+├── docx/          # Word 处理
+├── pptx/          # PPT 处理
+├── news/          # 新闻资讯
+├── himalaya/      # 邮件管理
+├── cron/          # 定时任务
+├── browser_visible/ # 可见浏览器
+└── file_reader/  # 文件阅读
 ```
 
-### 4. Crons (定时任务)
+#### Tools (`agents/tools/`)
 
-自动化任务调度：
+Agent 工具集：
 
-| 模块 | 文件 | 功能 |
-|------|------|------|
-| cron_manager | `app/crons/` | 定时任务管理 |
-| heartbeat | `app/crons/heartbeat.py` | 心跳/自检 |
-
-### 5. Console (Web 控制台)
-
-Browser-based 管理界面：
-
-```
-console/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── ...
-├── public/
-└── package.json
-```
-
-### 6. CLI (命令行工具)
-
-用户交互入口：
-
-| 命令 | 功能 |
+| 文件 | 功能 |
 |------|------|
-| `copaw init` | 初始化工作目录 |
-| `copaw app` | 启动服务 |
-| `copaw cron` | 定时任务管理 |
-| `copaw clean` | 清空工作目录 |
+| `file_io.py` | 文件读写 |
+| `shell.py` | 执行命令 |
+| `browser_control.py` | 浏览器控制 |
+| `browser_snapshot.py` | 浏览器截图 |
+| `memory_search.py` | 记忆搜索 |
+| `desktop_screenshot.py` | 桌面截图 |
+| `send_file.py` | 发送文件 |
+| `get_current_time.py` | 获取时间 |
+
+#### Memory (`agents/memory/`)
+
+记忆系统实现
+
+#### Md_files (`agents/md_files/`)
+
+Markdown 文件处理
+
+### 4. Config (`config/`)
+
+配置管理：
+
+| 文件 | 功能 |
+|------|------|
+| `config.py` | 配置加载 |
+| `utils.py` | 配置工具 |
+| `watcher.py` | 配置监视 |
+
+### 5. Providers (`providers/`)
+
+模型提供商：
+
+| 文件 | 功能 |
+|------|------|
+| `registry.py` | 提供商注册表 |
+| `store.py` | 配置存储 |
+| `models.py` | 数据模型 |
+
+### 6. Envs (`envs/`)
+
+环境变量加载：
+
+| 文件 | 功能 |
+|------|------|
+| `store.py` | 环境变量存储 |
 
 ---
 
@@ -135,19 +192,19 @@ console/
 ### 消息接收流程
 
 ```
-User (钉钉/飞书/QQ/Discord)
+User (钉钉/飞书/QQ/Discord/iMessage)
     │
     ▼
 Channel Webhook/WebSocket
     │
     ▼
-Channel Handler
+Channel Handler (channels/*.py)
     │
     ▼
-Router (消息路由)
+AgentRunner (app/runner/)
     │
     ▼
-Agent (ReAct)
+CoPawAgent (agents/react_agent.py)
     │
     ├──▶ Skills Manager (加载 Skills)
     │
@@ -168,13 +225,13 @@ User
 ### 定时任务流程
 
 ```
-Cron Scheduler
+Cron Manager (app/crons/)
     │
     ▼
-Cron Job (心跳/定时任务)
+Cron Executor
     │
     ▼
-Agent (ReAct)
+AgentRunner → CoPawAgent
     │
     ▼
 (同消息处理流程)
@@ -187,15 +244,37 @@ Response → 指定 Channel
 
 ## 配置文件
 
-```
-config/
-└── config.json          # 主配置文件
+### 工作目录结构
 
-工作目录/
-├── config.json          # 用户配置
-├── memory/              # 记忆存储
-├── skills/              # Skills
-└── data/                # 数据文件
+```
+~/.copaw/                    # 默认工作目录
+├── config.json              # 主配置文件
+├── jobs.json                # 定时任务
+├── chats.json               # 对话历史
+├── memory/                  # 记忆存储
+├── active_skills/           # 启用的 Skills
+├── customized_skills/        # 自定义 Skills
+├── media/                   # 媒体文件
+└── logs/                   # 日志
+```
+
+### config.json 结构
+
+```json
+{
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "app_id": "...",
+      "app_secret": "..."
+    }
+  },
+  "agents": {
+    "defaults": {
+      "heartbeat": {...}
+    }
+  }
+}
 ```
 
 ---
@@ -204,22 +283,20 @@ config/
 
 ### 添加新 Channel
 
-1. 继承 `Channel` 基类
+1. 继承 `Channel` 基类 (`app/channels/base.py`)
 2. 实现 `start()`, `stop()`, `send()`, `handle_message()`
-3. 在 `channels/manager.py` 注册
+3. 在 `app/channels/manager.py` 注册
 
 ### 添加新 Skill
 
-1. 在 `ext_skills/` 创建目录
+1. 在 `agents/skills/` 创建目录
 2. 添加 `SKILL.md`（说明文档）
-3. 添加 `_meta.json`（元数据）
-4. 添加执行脚本（Python/JS）
+3. 实现技能逻辑
 
 ### 添加新 Tool
 
 1. 在 `agents/tools/` 添加实现
 2. 注册到 Tools Manager
-3. 在 Skill 中声明依赖
 
 ---
 
@@ -228,53 +305,31 @@ config/
 | 层级 | 技术 |
 |------|------|
 | 核心框架 | Python 3.10+ |
-| Agent 引擎 | AgentScope |
-| LLM 运行时 | AgentScope Runtime |
-| 记忆系统 | ReMe |
-| Web 框架 | Flask / aiohttp |
-| 前端 | React + TypeScript |
-| 模型调用 | OpenAI API 兼容 |
+| Agent 引擎 | AgentScope Runtime |
+| Web 框架 | FastAPI |
+| CLI | Click |
+| 模型调用 | DashScope API |
 
 ---
 
-## 部署架构
+## 版本信息
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Production                              │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
-│   │   nginx     │───▶│   CoPaw     │───▶│   Model     │   │
-│   │  (反向代理)  │    │   (服务)    │    │   Provider  │   │
-│   └─────────────┘    └─────────────┘    └─────────────┘   │
-│         │                  │                                 │
-│         │            ┌────▼────┐                            │
-│         │            │  SQLite │                            │
-│         │            │  (数据)  │                            │
-│         │            └─────────┘                            │
-│         │                                                     │
-│   ┌─────▼─────┐                                             │
-│   │  Channel  │  钉钉/飞书/QQ/Discord                        │
-│   └───────────┘                                             │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
+- **当前版本**: 0.0.2
+- **源码提取**: 从 PyPI copaw v0.0.2 site-packages
+- **构建基础**: AgentScope, AgentScope Runtime, ReMe
 
 ---
 
 ## 安全考虑
 
 - 所有数据本地存储
-- 敏感信息加密存储
+- 敏感信息通过环境变量管理
 - Channel 认证 Token 安全管理
-- 沙盒执行用户代码
 
 ---
 
 ## 性能优化
 
 - Skills 懒加载
-- 向量记忆缓存
 - 并发任务调度
 - 模型响应流式输出

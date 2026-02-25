@@ -2,45 +2,113 @@
 
 > Works for you, grows with you.
 
-Your Personal AI Assistant; easy to install, deploy on your own machine or on the cloud; supports multiple chat apps with easily extensible capabilities.
+Personal AI Assistant - Easy to install, deploy locally or on cloud, supports multiple chat apps with extensible capabilities.
 
 ---
 
 ## 项目简介
 
-CoPaw 是一款**个人助理型产品**，部署在你自己的环境中。
+CoPaw 是一款**个人助理型产品**，基于 [AgentScope Runtime](https://github.com/agentscope-ai/agentscope-runtime) 构建，部署在你的本地或云端环境中。
 
-- **多通道对话** — 通过钉钉、飞书、QQ、Discord、iMessage 等与你对话
-- **定时执行** — 按你的配置自动运行任务
-- **能力由 Skills 决定，有无限可能** — 内置定时任务、PDF 与表单、Word/Excel/PPT 文档处理、新闻摘要、文件阅读等
-- **数据全在本地** — 不依赖第三方托管
+- **多通道对话** — 通过钉钉、飞书、QQ、Discord、iMessage 与你对话
+- **定时执行** — 按配置自动运行任务（cron）
+- **能力由 Skills 决定** — 内置 PDF/Office/新闻/文件阅读等能力，支持自定义扩展
+- **数据本地存储** — 不依赖第三方托管
 
 ---
 
 ## 核心特性
 
 ### 多通道支持
-| 频道 | 状态 |
-|------|------|
-| 钉钉 (DingTalk) | ✅ |
-| 飞书 (Feishu/Lark) | ✅ |
-| QQ | ✅ |
-| Discord | ✅ |
-| iMessage (仅 Mac) | ✅ |
-| Console (Web UI) | ✅ |
+| 频道 | 文件 | 状态 |
+|------|------|------|
+| 飞书 (Feishu/Lark) | `app/channels/feishu.py` | ✅ |
+| 钉钉 (DingTalk) | `app/channels/dingtalk.py` | ✅ |
+| QQ | `app/channels/qq.py` | ✅ |
+| Discord | `app/channels/discord_.py` | ✅ |
+| iMessage (仅 Mac) | `app/channels/imessage.py` | ✅ |
+| Console (Web UI) | `app/channels/console.py` | ✅ |
 
 ### 内置 Skills
-- **定时任务 (cron)** — 定时执行预设任务
-- **PDF 处理** — 读取、提取、合并、拆分
-- **Office 文档** — Word/Excel/PPT 读写
-- **新闻摘要** — 各领域资讯查询
-- **文件阅读** — 文本类文件解析
-- **邮件管理** — Himalaya CLI
+| Skill | 路径 | 功能 |
+|-------|------|------|
+| pdf | `agents/skills/pdf/` | PDF 读取、提取、合并、拆分 |
+| xlsx | `agents/skills/xlsx/` | Excel 读写、公式、图表 |
+| docx | `agents/skills/docx/` | Word 文档处理 |
+| pptx | `agents/skills/pptx/` | PPT 演示文稿 |
+| news | `agents/skills/news/` | 新闻资讯查询 |
+| himalaya | `agents/skills/himalaya/` | 邮件管理 |
+| cron | `agents/skills/cron/` | 定时任务 |
+| browser_visible | `agents/skills/browser_visible/` | 可见浏览器 |
+| file_reader | `agents/skills/file_reader/` | 文本文件读取 |
 
-### 数据与隐私
-- 所有数据存储在本地
-- 支持本地/云端部署
-- 无第三方托管
+### Agent 工具 (Tools)
+| Tool | 文件 | 功能 |
+|------|------|------|
+| file_io | `agents/tools/file_io.py` | 文件读写 |
+| shell | `agents/tools/shell.py` | 执行命令 |
+| browser_control | `agents/tools/browser_control.py` | 浏览器控制 |
+| browser_snapshot | `agents/tools/browser_snapshot.py` | 浏览器截图 |
+| memory_search | `agents/tools/memory_search.py` | 记忆搜索 |
+| desktop_screenshot | `agents/tools/desktop_screenshot.py` | 桌面截图 |
+| send_file | `agents/tools/send_file.py` | 发送文件 |
+| get_current_time | `agents/tools/get_current_time.py` | 获取时间 |
+
+---
+
+## 版本信息
+
+- **当前版本**: 0.0.2
+- **源码来源**: 从 Python 包 `copaw` (v0.0.2) site-packages 提取
+- **构建基础**: 
+  - [AgentScope](https://github.com/agentscope-ai/agentscope)
+  - [AgentScope Runtime](https://github.com/agentscope-ai/agentscope-runtime)
+  - [ReMe](https://github.com/agentscope-ai/ReMe)
+
+---
+
+## 目录结构
+
+```
+copaw/
+├── __init__.py              # 包入口
+├── __version__.py           # 版本号 (0.0.2)
+├── constant.py              # 常量定义
+├── copaw_mgr.py             # 生命周期管理脚本
+│
+├── agents/                  # Agent 核心
+│   ├── react_agent.py       # CoPawAgent (ReAct 推理)
+│   ├── skills_manager.py    # Skills 加载与管理
+│   ├── prompt.py            # Prompt 模板
+│   ├── schema.py            # 数据结构
+│   ├── utils.py             # 工具函数
+│   ├── md_files/           # Markdown 文件处理
+│   ├── memory/             # 记忆系统
+│   ├── skills/             # 内置 Skills (9个)
+│   └── tools/               # Agent 工具集
+│
+├── app/                     # 应用主程序
+│   ├── _app.py             # FastAPI 应用入口
+│   ├── channels/           # 频道实现 (6个)
+│   ├── crons/              # 定时任务
+│   ├── runner/             # AgentRunner 运行器
+│   └── routers/             # API 路由
+│
+├── cli/                     # 命令行工具
+│   ├── main.py             # CLI 入口
+│   ├── app_cmd.py          # 启动命令
+│   ├── init_cmd.py         # 初始化命令
+│   ├── channels_cmd.py     # 频道命令
+│   ├── cron_cmd.py         # 定时任务命令
+│   ├── skills_cmd.py       # Skills 命令
+│   └── ...
+│
+├── config/                  # 配置管理
+├── envs/                    # 环境变量加载
+├── providers/               # 模型提供商
+├── tokenizer/               # 分词器
+└── utils/                   # 工具函数
+```
 
 ---
 
@@ -51,126 +119,48 @@ CoPaw 是一款**个人助理型产品**，部署在你自己的环境中。
 pip install copaw
 
 # 或从源码安装
-# git clone https://github.com/agentscope-ai/CoPaw.git // 来自 https://pypi.org/project/copaw
-# cd CoPaw
- git clone https://github.com/fengzhi09/copaw_09
-cd copaw_09
-pip install -e .
-
-# 启动服务
+pip install -e ".[dev]"
+cd console && npm ci && npm run build
 copaw app
 ```
 
 ### 快速开始
 
 ```bash
-# 1. 初始化工作目录
+# 1. 初始化
 copaw init my-assistant
 
-# 2. 配置频道（钉钉/飞书/QQ/Discord/iMessage）
+# 2. 配置频道
 # 参考: https://copaw.agentscope.io/docs/channels
 
-# 3. 启动服务
+# 3. 启动
 copaw app
 ```
 
----
-
-## 项目来源
-
-本项目源码从 Python 包 `copaw` 的 site-packages 目录中提取，原版由 [AgentScope 团队](https://github.com/agentscope-ai) 基于以下项目构建：
-
-- [AgentScope](https://github.com/agentscope-ai/agentscope)
-- [AgentScope Runtime](https://github.com/agentscope-ai/agentscope-runtime)
-- [ReMe](https://github.com/agentscope-ai/ReMe)
-
-官方文档：[copaw.agentscope.io](https://copaw.agentscope.io/docs/intro)
-
----
-
-## 目录结构
-
-```
-copaw/
-├── agents/              # Agent 核心实现
-│   ├── skills/         # Skills 管理与加载
-│   ├── memory/         # 记忆系统
-│   └── tools/          # 工具集
-├── app/                # 应用主程序
-│   ├── channels/       # 频道实现（钉钉/飞书/QQ/Discord/iMessage）
-│   ├── crons/          # 定时任务
-│   └── runner/         # 运行器
-├── cli/                # 命令行工具
-├── config/             # 配置管理
-├── console/            # Web 控制台前端
-├── envs/               # 环境封装
-├── providers/          # 模型提供商
-├── utils/              # 工具函数
-├── copaw_mgr.py        # Copaw 生命周期管理脚本
-├── README.md           # 项目说明
-├── ROADMAP.md          # 发展规划
-└── ARCHITECTURE.md     # 架构设计
-```
-
-### copaw_mgr.py 管理脚本
-
-Copaw 生命周期管理工具，配置文件位于 `~/.copaw_mgr.yaml`：
+### 使用 copaw_mgr.py 管理
 
 ```bash
-# 初始化（首次配置）
+# 初始化配置
 python3 copaw_mgr.py init
 
-# 启动服务
+# 启动/停止/重启
 python3 copaw_mgr.py start
-
-# 停止服务
-python3 copaw_mgr.py stop [--force]
-
-# 重启服务
+python3 copaw_mgr.py stop
 python3 copaw_mgr.py restart
 
-# 查看状态
+# 状态/日志
 python3 copaw_mgr.py status
-
-# 查看日志
 python3 copaw_mgr.py log
 ```
 
-**功能特性**：
-- 配置文件集中管理（~/.copaw_mgr.yaml）
-- 自动同步配置到 config.json
-- 日志轮转与清理
-- 配置一致性检查
-- 支持自定义模型和 API
-
 ---
 
-## 文档
+## 官方文档
 
-| 主题 | 说明 |
+| 主题 | 链接 |
 |------|------|
-| [Introduction](https://copaw.agentscope.io/docs/intro) | CoPaw 是什么及如何使用 |
-| [Quick Start](https://copaw.agentscope.io/docs/quickstart) | 安装与快速启动 |
-| [Console](https://copaw.agentscope.io/docs/console) | Web UI 对话与配置 |
-| [Channels](https://copaw.agentscope.io/docs/channels) | 频道配置（钉钉/飞书/QQ/Discord/iMessage） |
-| [Heartbeat](https://copaw.agentscope.io/docs/heartbeat) | 定时自检与摘要 |
-| [CLI](https://copaw.agentscope.io/docs/cli) | 命令行工具 |
-| [Skills](https://copaw.agentscope.io/docs/skills) | 扩展与自定义能力 |
-| [Config](https://copaw.agentscope.io/docs/config) | 工作目录与配置文件 |
-
----
-
-## 后续规划
-
-本项目将持续扩展更多企业级能力：
-
-- **MCP (Model Context Protocol)** — 支持 MCP 协议的工具接入
-- **外置 Skills** — 支持从 ClawHub 等平台安装更多 Skills
-- **多 Agent 协作** — 支持多 Agent 联合工作流
-- **企业版** — 团队协作、企业级权限管理
-- **Credit Plan** — 基于积分的计划体系
-
-详见 [ROADMAP.md](./ROADMAP.md)
+| 官方文档 | [copaw.agentscope.io](https://copaw.agentscope.io/docs/intro) |
+| AgentScope | [github.com/agentscope-ai](https://github.com/agentscope-ai) |
 
 ---
 
@@ -181,5 +171,5 @@ python3 copaw_mgr.py log
 ---
 
 <p align="center">
-  <sub>Built on AgentScope · CLI: copaw</sub>
+  <sub>Built on AgentScope Runtime · CLI: copaw</sub>
 </p>
