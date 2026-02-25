@@ -10,7 +10,7 @@
     },
     "custom": {
       "base_url": "https://api.minimaxi.com/v1",
-      "api_key": "sk-cp-bI7d6e9x92xdRgILBVIsQfAHGijcJd2EXufhLNkEdcn3NKXla3ikTSYEDS-5BIlM9JbApSvtcoXvf9ADD7G3ppp_K_6BO3HpOhJ_3ddf352A4ONVm4LjudE"
+      "api_key": ""
     }
   },
   "active_llm": {
