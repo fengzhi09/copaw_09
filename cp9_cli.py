@@ -114,15 +114,20 @@ class CommandDispatcher:
     
     def cmd_test(self):
         t = self.args.target
+        # 确保项目根目录在 sys.path 中
+        sys.path.insert(0, str(PROJECT_ROOT))
+        
         if t == "agent":
             aid = self.args.id or "00"
             msg = self.args.msg or "你好"
             print(f"🧪 测试 Agent {aid}")
             print(f"   消息: {msg}")
-            # 实际测试
-            sys.path.insert(0, '/home/ace09/bots')
             try:
-                from copaw_09.app.brain import Thalamus
+                # 动态导入，兼容直接运行和安装后运行
+                try:
+                    from app.brain import Thalamus
+                except ImportError:
+                    from copaw_09.app.brain import Thalamus
                 thalamus = Thalamus()
                 intent = thalamus.understand_intent(msg)
                 route = thalamus.route_message(msg)
@@ -130,34 +135,63 @@ class CommandDispatcher:
                 print(f"   路由: Agent {route}")
                 print("✅ Agent 测试完成")
             except Exception as e:
+                import traceback
                 print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
         elif t == "channel":
             ch = self.args.channel or "feishu"
             act = self.args.action or "send"
             msg = self.args.msg or "测试"
             print(f"🧪 测试 Channel {ch}")
             print(f"   操作: {act}, 消息: {msg}")
-            print(f"✅ Channel 测试完成")
+            try:
+                try:
+                    from app.channels import get_channel
+                except ImportError:
+                    from copaw_09.app.channels import get_channel
+                channel = get_channel(ch)
+                print(f"   Channel: {channel}")
+                print("✅ Channel 测试完成")
+            except Exception as e:
+                import traceback
+                print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
         elif t == "provider":
             pv = self.args.provider or "minimax"
             md = self.args.model or "minimax-m2.5"
             msg = self.args.msg or "hello"
             print(f"🧪 测试 Provider {pv}")
             print(f"   模型: {md}, 消息: {msg}")
-            sys.path.insert(0, str(PROJECT_ROOT))
             try:
-                from copaw_09.app.brain import Prefrontal
+                try:
+                    from app.brain import Prefrontal
+                except ImportError:
+                    from copaw_09.app.brain import Prefrontal
                 p = Prefrontal(primary_model=md)
                 print(f"   主模型: {p.primary_model}")
                 print("✅ Provider 测试完成")
             except Exception as e:
+                import traceback
                 print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
         elif t == "sensor":
             sns = self.args.sensor or "dispatch"
             msg = self.args.msg or "测试"
             print(f"🧪 测试 Sensor {sns}")
             print(f"   消息: {msg}")
-            print(f"✅ Sensor 测试完成")
+            try:
+                try:
+                    from sensors import get_sensor
+                except ImportError:
+                    from copaw_09.sensors import get_sensor
+                sensor = get_sensor(sns)
+                result = sensor(msg)
+                print(f"   结果: {result}")
+                print("✅ Sensor 测试完成")
+            except Exception as e:
+                import traceback
+                print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
         elif t == "skill":
             sk = self.args.skill or "feishu-doc"
             print(f"🧪 测试 Skill {sk}")
