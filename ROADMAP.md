@@ -20,8 +20,10 @@
 - [x] CLI 命令工具 (cp9_cli.py)
 - [x] Gateway 开发
 - [x] CLI 测试命令 (test agent/channel/provider/sensor/skill/cron)
+- [x] CLI get/list 命令动态读取配置
+- [x] MiniMax API 集成 (api.minimaxi.com)
 - [ ] 丘脑模块 (Qwen3-0.6B-FP8)
-- [ ] 前额叶集成 (GLM-5)
+- [x] 前额叶集成 (MiniMax-M2.5)
 - [ ] 00 号管理高手开发
 - [ ] 飞书适配器
 - [ ] PostgreSQL 初始化
