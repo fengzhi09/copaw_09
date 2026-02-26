@@ -70,7 +70,7 @@
 | 钉钉 WebHook | ✅ 已集成 | P1 |
 | QQ OneBot | ✅ 已集成 | P1 |
 | Discord Bot | ✅ 已集成 | P1 |
-| 电报 Bot | ⏳ 待开发 | P1 |
+| 电报 Bot | ✅ 已集成 | P1 |
 | 事件过滤 | ✅ 已集成 | P1 |
 
 ### 2.2 Agent 能力
