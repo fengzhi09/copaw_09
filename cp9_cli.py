@@ -48,7 +48,7 @@ class CommandDispatcher:
         a = self.args
         if a.action == "start":
             port = a.port or 94179
-            print(f"🚀 启动 Cp9_09 服务 (端口: {port})...")
+            print(f"🚀 启动 cp9 服务 (端口: {port})...")
             import subprocess
             import os
             # 启动 uvicorn 服务
@@ -103,12 +103,12 @@ class CommandDispatcher:
             )
             if result.stdout:
                 pids = result.stdout.strip().split("\n")
-                print("📊 Cp9_09 服务状态:")
+                print("📊 cp9 服务状态:")
                 print("  状态: 运行中")
                 print(f"  PID: {pids[0]}")
                 print("  端口: 94179")
             else:
-                print("📊 Cp9_09 服务状态:")
+                print("📊 cp9 服务状态:")
                 print("  状态: 未运行")
         elif a.action == "init":
             cfg = a.config or "~/.cp9/config.yaml"
