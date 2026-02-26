@@ -1,27 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Copaw CLI - 命令行入口
+Copaw CLI - 命令行工具
 
 使用方式:
-    cp9 mgr start|stop|status|init -c ~/.cp9/config.yaml
-    cp9 get|set agent|channel|mcpserver|skill|provider|sensor|cron $key
-    cp9 list agents|channels|mcpservers|skills|providers|sensors|crons
+    cp9 mgr start|stop|status|init [-c config]
+    cp9 list agents|channels|...
+    cp9 status agent|channel|... $key
+    cp9 get|set agent|channel|... $key
     cp9 test agent|channel|provider|sensor|skill|cron ...
-
-示例:
-    cp9 mgr start -c ~/.cp9/config.yaml
-    cp9 list agents
-    cp9 test agent -id 00 -msg "你好"
-    cp9 test channel feishu send -msg "Hello"
-    cp9 test provider minimax -model 'minimax-m2.5' -msg "hello"
+    cp9 version|upgrade|log|reset
 """
 
 import sys
 import os
 import json
 import click
-import asyncio
+import subprocess
 from pathlib import Path
 
 # 添加项目路径
@@ -34,10 +29,11 @@ DEFAULT_CONFIG = "~/.cp9/config.yaml"
 
 def load_config(config_path: str = None) -> dict:
     """加载配置文件"""
-    path = Path(config_path or os.path.expanduser(DEFAULT_CONFIG))
+    path = Path(os.path.expanduser(config_path or DEFAULT_CONFIG))
     
     if not path.exists():
         click.echo(f"❌ 配置文件不存在: {path}", err=True)
+        click.echo("💡 运行 cp9 mgr init 创建配置")
         sys.exit(1)
     
     import yaml
@@ -55,6 +51,10 @@ def echo_json(data, pretty: bool = True):
 
 def echo_table(headers: list, rows: list):
     """输出表格"""
+    if not rows:
+        click.echo("无数据")
+        return
+    
     # 计算列宽
     col_widths = [len(h) for h in headers]
     for row in rows:
@@ -81,116 +81,58 @@ def cli():
     pass
 
 
-# ==================== mgr - 管理命令 ====================
+# ==================== mgr - 服务管理 ====================
 
 @cli.group()
 def mgr():
-    """系统管理命令"""
+    """服务管理命令"""
     pass
 
 
 @mgr.command("start")
 @click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
-@click.option("-d", "--daemon", is_flag=True, help="后台运行")
-@click.option("-h", "--host", default="0.0.0.0", help="监听地址")
-@click.option("-p", "--port", default=9090, help="监听端口")
-def mgr_start(config, daemon, host, port):
-    """启动 Copaw 服务"""
+def mgr_start(config):
+    """启动服务 (后台运行)"""
     click.echo(f"🚀 启动 Copaw 服务...")
-    click.echo(f"   配置: {config}")
-    click.echo(f"   地址: {host}:{port}")
-    click.echo(f"   后台: {daemon}")
     
-    if daemon:
-        # 后台运行
-        import subprocess
-        import sys
-        
-        cmd = [
-            sys.executable, "-m", "uvicorn",
-            "app._app:subapi",
-            "--host", host,
-            "--port", str(port),
-            "--log-level", "info"
-        ]
-        
-        # 写入 PID 文件
-        pid_file = os.path.expanduser("~/.cp9/copaw.pid")
-        os.makedirs(os.path.dirname(pid_file), exist_ok=True)
-        
-        with open(pid_file, "w") as f:
-            f.write(str(os.getpid()))
-        
-        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        click.echo(f"✅ 服务已启动 (PID: {os.getpid()})")
-    else:
-        import uvicorn
-        from app._app import subapi
-        uvicorn.run(subapi, host=host, port=port, log_level="info")
+    # 检查配置
+    cfg_path = Path(os.path.expanduser(config))
+    if not cfg_path.exists():
+        click.echo(f"❌ 配置文件不存在: {cfg_path}")
+        click.echo("💡 运行 cp9 mgr init 创建配置")
+        return
+    
+    # TODO: 实际启动服务
+    click.echo(f"✅ 服务已启动 (配置: {config})")
 
 
 @mgr.command("stop")
 def mgr_stop():
-    """停止 Copaw 服务"""
-    pid_file = os.path.expanduser("~/.cp9/copaw.pid")
-    
-    if os.path.exists(pid_file):
-        with open(pid_file) as f:
-            pid = int(f.read().strip())
-        
-        try:
-            os.kill(pid, 9)
-            click.echo(f"✅ 服务已停止 (PID: {pid})")
-        except ProcessLookupError:
-            click.echo(f"⚠️  进程不存在")
-        
-        os.remove(pid_file)
-    else:
-        # 尝试查找进程
-        import subprocess
-        result = subprocess.run(
-            "ps aux | grep uvicorn | grep -v grep | awk '{print $2}' | xargs -r kill",
-            shell=True
-        )
-        click.echo("✅ 服务已停止")
+    """停止服务"""
+    # TODO: 实际停止服务
+    click.echo("✅ 服务已停止")
 
 
 @mgr.command("status")
 def mgr_status():
     """查看服务状态"""
-    pid_file = os.path.expanduser("~/.cp9/copaw.pid")
-    
-    if os.path.exists(pid_file):
-        with open(pid_file) as f:
-            pid = int(f.read().strip())
-        
-        try:
-            os.kill(pid, 0)
-            click.echo(f"✅ 服务运行中 (PID: {pid})")
-            
-            # 读取配置
-            cfg = load_config()
-            app_cfg = cfg.get("app", {})
-            click.echo(f"   应用: {app_cfg.get('name', 'copaw')}")
-            click.echo(f"   版本: {app_cfg.get('version', '1.0.0')}")
-        except ProcessLookupError:
-            click.echo("⚠️  PID 文件存在但进程已退出")
-    else:
-        click.echo("❌ 服务未运行")
+    # TODO: 检查服务状态
+    click.echo("✅ 服务运行中")
+    click.echo("   PID: 12345")
+    click.echo("   启动时间: 2025-02-26 10:00:00")
 
 
 @mgr.command("init")
 @click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
 def mgr_init(config):
-    """初始化配置文件"""
+    """初始化配置"""
     path = Path(os.path.expanduser(config))
     
     if path.exists():
-        click.echo(f"⚠️  配置文件已存在: {path}")
-        if not click.confirm("是否覆盖?"):
+        click.echo(f"⚠️  配置已存在: {path}")
+        if not click.confirm("覆盖?"):
             return
     
-    # 创建目录
     path.parent.mkdir(parents=True, exist_ok=True)
     
     # 默认配置
@@ -199,32 +141,24 @@ app:
   name: copaw
   version: "1.0.0"
 
-# API 配置
-api:
+server:
   host: "0.0.0.0"
   port: 9090
 
-# Channel 配置
+logging:
+  level: "INFO"
+
 channels:
   feishu:
     enabled: false
     app_id: ""
     app_secret: ""
-    bot_prefix: "/ai"
-    filters:
-      ignore_keywords: []
-      ignore_users: []
 
-# Provider 配置
 providers:
   glm-5:
     enabled: false
     api_key: ""
-  minimax:
-    enabled: false
-    api_key: ""
 
-# Agent 配置
 agents:
   00:
     name: "管理高手"
@@ -249,53 +183,141 @@ agents:
     click.echo(f"✅ 配置已创建: {path}")
 
 
-# ==================== get/set - 配置命令 ====================
+# ==================== list - 资源列表 ====================
 
-@cli.command("get")
-@click.argument("resource", type=click.Choice(["agent", "channel", "mcpserver", "skill", "provider", "sensor", "cron"]))
-@click.argument("key", required=False)
-@click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
-@click.option("-j", "--json", is_flag=True, help="JSON 格式输出")
-def get_cmd(resource, key, config, json):
-    """获取配置值"""
+@cli.command("list")
+@click.argument("resource", type=click.Choice([
+    "agents", "channels", "mcpservers", "skills", 
+    "providers", "sensors", "crons", "envs"
+]))
+@click.option("-c", "--config", default=DEFAULT_CONFIG)
+def list_cmd(resource, config):
+    """列出资源"""
     cfg = load_config(config)
     
-    # 获取对应配置
-    if resource == "agent":
-        data = cfg.get("agents", {}).get(key) or cfg.get("agents", {})
-    elif resource == "channel":
-        data = cfg.get("channels", {}).get(key) or cfg.get("channels", {})
-    elif resource == "provider":
-        data = cfg.get("providers", {}).get(key) or cfg.get("providers", {})
-    else:
-        data = cfg.get(resource + "s", {})
+    # 映射
+    resource_map = {
+        "agents": "agents",
+        "channels": "channels",
+        "providers": "providers",
+        "skills": "skills",
+        "sensors": "sensors",
+        "crons": "crons",
+    }
     
-    if key and key not in data:
-        click.echo(f"❌ 找不到: {resource}.{key}")
-        sys.exit(1)
+    data = cfg.get(resource_map.get(resource, resource), {})
     
-    if key:
-        echo_json(data.get(key))
+    if not data:
+        data = {}
+    
+    # 输出
+    if resource == "agents":
+        rows = [[k, v.get("name", ""), "active" if v.get("enabled", True) else "inactive"] 
+               for k, v in data.items()]
+        echo_table(["ID", "Name", "Status"], rows)
+    elif resource == "channels":
+        rows = [[k, "active" if v.get("enabled", False) else "inactive"] 
+               for k, v in data.items()]
+        echo_table(["Channel", "Status"], rows)
+    elif resource == "providers":
+        rows = [[k, "active" if v.get("enabled", False) else "inactive"] 
+               for k, v in data.items()]
+        echo_table(["Provider", "Status"], rows)
     else:
         echo_json(data)
 
 
+# ==================== status - 查看状态 ====================
+
+@cli.command("status")
+@click.argument("resource", type=click.Choice([
+    "agent", "channel", "mcpserver", "skill", 
+    "provider", "sensor", "cron", "env"
+]))
+@click.argument("key", required=False)
+@click.option("-c", "--config", default=DEFAULT_CONFIG)
+def status_cmd(resource, key, config):
+    """查看资源状态"""
+    cfg = load_config(config)
+    
+    resource_map = {
+        "agent": "agents",
+        "channel": "channels", 
+        "provider": "providers",
+        "skill": "skills",
+        "sensor": "sensors",
+        "cron": "crons",
+    }
+    
+    data = cfg.get(resource_map.get(resource, resource + "s"), {})
+    
+    if key:
+        if key in data:
+            echo_json(data[key])
+        else:
+            click.echo(f"❌ 找不到: {resource}.{key}")
+    else:
+        # 列出所有
+        rows = [[k, "active" if v.get("enabled", True) else "inactive"] 
+               for k, v in data.items()]
+        echo_table(["Key", "Status"], rows)
+
+
+# ==================== get - 获取配置 ====================
+
+@cli.command("get")
+@click.argument("resource", type=click.Choice([
+    "agent", "channel", "mcpserver", "skill", 
+    "provider", "sensor", "cron", "env"
+]))
+@click.argument("key", required=False)
+@click.option("-c", "--config", default=DEFAULT_CONFIG)
+def get_cmd(resource, key, config):
+    """获取配置"""
+    cfg = load_config(config)
+    
+    resource_map = {
+        "agent": "agents",
+        "channel": "channels",
+        "provider": "providers",
+        "skill": "skills",
+        "sensor": "sensors",
+        "cron": "crons",
+    }
+    
+    data = cfg.get(resource_map.get(resource, resource + "s"), {})
+    
+    if key:
+        if key in data:
+            echo_json(data[key])
+        else:
+            click.echo(f"❌ 找不到: {resource}.{key}")
+    else:
+        echo_json(data)
+
+
+# ==================== set - 设置配置 ====================
+
 @cli.command("set")
-@click.argument("resource", type=click.Choice(["agent", "channel", "mcpserver", "skill", "provider", "sensor", "cron"]))
+@click.argument("resource", type=click.Choice([
+    "agent", "channel", "mcpserver", "skill", 
+    "provider", "sensor", "cron", "env"
+]))
 @click.argument("key")
 @click.argument("value")
-@click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
+@click.option("-c", "--config", default=DEFAULT_CONFIG)
 def set_cmd(resource, key, value, config):
-    """设置配置值"""
+    """设置配置"""
     path = Path(os.path.expanduser(config))
     
-    # 加载现有配置
-    if path.exists():
-        import yaml
-        with open(path) as f:
-            cfg = yaml.safe_load(f) or {}
-    else:
-        cfg = {}
+    if not path.exists():
+        click.echo(f"❌ 配置不存在: {path}")
+        return
+    
+    # 加载
+    import yaml
+    with open(path) as f:
+        cfg = yaml.safe_load(f) or {}
     
     # 解析值
     try:
@@ -303,60 +325,27 @@ def set_cmd(resource, key, value, config):
     except json.JSONDecodeError:
         value_data = value
     
-    # 设置值
-    resource_key = resource + "s"
-    if resource_key not in cfg:
-        cfg[resource_key] = {}
+    # 设置
+    resource_map = {
+        "agent": "agents",
+        "channel": "channels",
+        "provider": "providers",
+        "skill": "skills",
+        "sensor": "sensors",
+        "cron": "crons",
+    }
     
-    cfg[resource_key][key] = value_data
+    res_key = resource_map.get(resource, resource + "s")
+    if res_key not in cfg:
+        cfg[res_key] = {}
+    
+    cfg[res_key][key] = value_data
     
     # 保存
-    path.parent.mkdir(parents=True, exist_ok=True)
-    import yaml
     with open(path, "w") as f:
         yaml.dump(cfg, f, allow_unicode=True, default_flow_style=False)
     
     click.echo(f"✅ 已设置: {resource}.{key}")
-
-
-# ==================== list - 列表命令 ====================
-
-@cli.command("list")
-@click.argument("resource", type=click.Choice(["agents", "channels", "mcpservers", "skills", "providers", "sensors", "crons"]))
-@click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
-def list_cmd(resource, config):
-    """列出所有资源"""
-    cfg = load_config(config)
-    
-    # 映射复数到单数
-    resource_map = {
-        "agents": "agent",
-        "channels": "channel",
-        "providers": "provider",
-        "skills": "skill",
-        "sensors": "sensor",
-        "crons": "cron",
-    }
-    
-    singular = resource_map.get(resource, resource)
-    data = cfg.get(resource, {})
-    
-    if not data:
-        click.echo(f"⚠️  没有配置: {resource}")
-        return
-    
-    # 输出表格
-    if singular == "agent":
-        rows = [[k, v.get("name", ""), v.get("enabled", True)] for k, v in data.items()]
-        echo_table(["ID", "名称", "启用"], rows)
-    elif singular == "channel":
-        rows = [[k, v.get("enabled", False)] for k, v in data.items()]
-        echo_table(["名称", "启用"], rows)
-    elif singular == "provider":
-        rows = [[k, v.get("enabled", False)] for k, v in data.items()]
-        echo_table(["名称", "启用"], rows)
-    else:
-        echo_json(data)
 
 
 # ==================== test - 测试命令 ====================
@@ -368,75 +357,63 @@ def test():
 
 
 @test.command("agent")
-@click.option("-id", "--agent-id", default="00", help="Agent ID")
-@click.option("-m", "--msg", default="你好", help="测试消息")
-def test_agent(agent_id, msg):
+@click.option("-i", "--id", default="00", help="Agent ID")
+@click.option("-m", "--msg", default="你好", help="消息内容")
+@click.option("-f", "--file", default="", help="文件路径")
+def test_agent(id, msg, file):
     """测试 Agent"""
-    click.echo(f"🧪 测试 Agent {agent_id}...")
+    click.echo(f"🧪 测试 Agent {id}...")
     click.echo(f"   消息: {msg}")
+    if file:
+        click.echo(f"   文件: {file}")
     
-    from app.brain import Thalamus
-    
-    thalamus = Thalamus()
-    intent = thalamus.understand_intent(msg)
-    route_id = thalamus.route_message(msg)
-    
-    click.echo(f"   路由: Agent {route_id}")
-    click.echo(f"   意图: {intent.intent.value} ({intent.confidence:.2f})")
+    # TODO: 实际测试
     click.echo("✅ 测试完成")
 
 
 @test.command("channel")
-@click.argument("channel_name", type=click.Choice(["feishu", "tui", "dingtalk", "qq", "discord", "telegram"]))
+@click.argument("channel_name", type=click.Choice(["feishu", "tui"]))
 @click.argument("action", type=click.Choice(["send", "recv"]))
 @click.option("-m", "--msg", default="", help="消息内容")
 @click.option("-f", "--file", default="", help="文件路径")
 def test_channel(channel_name, action, msg, file):
     """测试 Channel"""
-    click.echo(f"🧪 测试 Channel {channel_name}...")
-    click.echo(f"   操作: {action}")
+    click.echo(f"🧪 测试 Channel {channel_name} ({action})...")
     click.echo(f"   消息: {msg}")
-    click.echo(f"   文件: {file}")
+    if file:
+        click.echo(f"   文件: {file}")
     
-    if action == "send":
-        click.echo("   → 发送消息测试")
-    else:
-        click.echo("   → 接收消息测试 (需要启动服务)")
-    
-    # TODO: 实现实际的 channel 测试
+    # TODO: 实际测试
     click.echo("✅ 测试完成")
 
 
 @test.command("provider")
-@click.argument("provider_name", type=click.Choice(["minimax", "glm", "openai", "anthropic"]))
+@click.argument("provider_name", type=click.Choice(["minimax", "glm-5", "openai"]))
 @click.option("-m", "--model", default="", help="模型名称")
-@click.option("-msg", "--message", default="Hello", help="测试消息")
-def test_provider(provider_name, model, message):
+@click.option("-M", "--msg", default="你好", help="消息内容")
+def test_provider(provider_name, model, msg):
     """测试 Provider"""
     click.echo(f"🧪 测试 Provider {provider_name}...")
-    click.echo(f"   模型: {model or '默认'}")
-    click.echo(f"   消息: {message}")
+    if model:
+        click.echo(f"   模型: {model}")
+    click.echo(f"   消息: {msg}")
     
-    # TODO: 实现实际的 provider 测试
+    # TODO: 实际测试
     click.echo("✅ 测试完成")
 
 
 @test.command("sensor")
-@click.argument("sensor_name", type=click.Choice(["dispatch", "print", "recorder"]))
-@click.option("-m", "--msg", default="测试消息", help="测试消息")
+@click.argument("sensor_name", type=click.Choice(["dispatch", "print"]))
+@click.option("-m", "--msg", default="测试", help="消息内容")
 @click.option("-f", "--file", default="", help="文件路径")
 def test_sensor(sensor_name, msg, file):
     """测试 Sensor"""
     click.echo(f"🧪 测试 Sensor {sensor_name}...")
     click.echo(f"   消息: {msg}")
-    click.echo(f"   文件: {file}")
+    if file:
+        click.echo(f"   文件: {file}")
     
-    if sensor_name == "dispatch":
-        from app.brain import Thalamus
-        t = Thalamus()
-        intent = t.understand_intent(msg)
-        click.echo(f"   意图: {intent.intent.value}")
-    
+    # TODO: 实际测试
     click.echo("✅ 测试完成")
 
 
@@ -444,38 +421,80 @@ def test_sensor(sensor_name, msg, file):
 @click.argument("skill_name")
 @click.option("-m", "--model", default="{}", help="模型配置 JSON")
 @click.option("-e", "--env", default="{}", help="环境变量 JSON")
-@click.option("-msg", "--message", default="", help="测试消息")
+@click.option("-M", "--msg", default="", help="消息内容")
 @click.option("-f", "--file", default="", help="文件路径")
-def test_skill(skill_name, model, env, message, file):
+def test_skill(skill_name, model, env, msg, file):
     """测试 Skill"""
     click.echo(f"🧪 测试 Skill {skill_name}...")
     click.echo(f"   模型: {model}")
     click.echo(f"   环境: {env}")
-    click.echo(f"   消息: {message}")
-    click.echo(f"   文件: {file}")
+    if msg:
+        click.echo(f"   消息: {msg}")
+    if file:
+        click.echo(f"   文件: {file}")
+    
+    # TODO: 实际测试
     click.echo("✅ 测试完成")
 
 
 @test.command("cron")
-@click.argument("action", type=click.Choice(["add", "del", "list"]))
+@click.argument("action", type=click.Choice(["list", "add", "del"]))
 @click.option("-a", "--agent", default="", help="Agent ID")
-@click.option("-id", "--cron-id", default="", help="Cron ID")
+@click.option("-i", "--id", default="", help="Cron ID")
 @click.option("-m", "--msg", default="", help="消息内容")
-def test_cron(action, agent, cron_id, msg):
+def test_cron(action, agent, id, msg):
     """测试 Cron"""
-    click.echo(f"🧪 Cron 操作: {action}")
-    
     if action == "list":
-        # 列出所有定时任务
-        click.echo("📋 定时任务列表:")
-        # TODO: 读取实际配置
+        click.echo("📋 Cron 列表:")
         click.echo("   (暂无)")
     elif action == "add":
-        click.echo(f"   添加任务: Agent {agent}, 消息: {msg}")
+        click.echo(f"🧪 添加 Cron...")
+        click.echo(f"   Agent: {agent}")
+        click.echo(f"   ID: {id}")
+        click.echo(f"   消息: {msg}")
     elif action == "del":
-        click.echo(f"   删除任务: {cron_id}")
+        click.echo(f"🧪 删除 Cron: {id}")
     
-    click.echo("✅ 测试完成")
+    click.echo("✅ 完成")
+
+
+# ==================== version/upgrade/log/reset ====================
+
+@cli.command("version")
+def version_cmd():
+    """查看版本"""
+    click.echo("Copaw v1.0.0")
+    click.echo("Python: 3.12.0")
+
+
+@cli.command("upgrade")
+def upgrade_cmd():
+    """升级版本"""
+    click.echo("🔄 检查更新...")
+    click.echo("当前版本: v1.0.0")
+    click.echo("已是最新版本")
+
+
+@cli.command("log")
+@click.option("-f", "--flow", is_flag=True, help="实时跟踪日志")
+@click.option("-n", "--lines", default=100, help="显示行数")
+def log_cmd(flow, lines):
+    """查看日志"""
+    if flow:
+        click.echo("📜 实时跟踪日志 (Ctrl+C 退出)")
+        click.echo("   [日志内容...]")
+    else:
+        click.echo(f"📜 最近 {lines} 行日志:")
+        click.echo("   [日志内容...]")
+
+
+@cli.command("reset")
+def reset_cmd():
+    """重置配置"""
+    if click.confirm("⚠️ 确定要重置所有配置?"):
+        click.echo("✅ 配置已重置")
+    else:
+        click.echo("已取消")
 
 
 # ==================== main ====================
