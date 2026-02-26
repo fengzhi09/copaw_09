@@ -1,175 +1,161 @@
-# CoPaw 🦞
+# Copaw 🐾
 
-> Works for you, grows with you.
+> 多 Agent 智能协作系统 | 基于「前额叶-丘脑-小脑」架构
 
-Personal AI Assistant - Easy to install, deploy locally or on cloud, supports multiple chat apps with extensible capabilities.
-
----
-
-## 项目简介
-
-CoPaw 是一款**个人助理型产品**，基于 [AgentScope Runtime](https://github.com/agentscope-ai/agentscope-runtime) 构建，部署在你的本地或云端环境中。
-
-- **多通道对话** — 通过钉钉、飞书、QQ、Discord、iMessage 与你对话
-- **定时执行** — 按配置自动运行任务（cron）
-- **能力由 Skills 决定** — 内置 PDF/Office/新闻/文件阅读等能力，支持自定义扩展
-- **数据本地存储** — 不依赖第三方托管
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-green.svg)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgreSQL-16+-blue.svg)](https://www.postgresql.org/)
 
 ---
 
-## 核心特性
+## 📋 简介
 
-### 多通道支持
-| 频道 | 文件 | 状态 |
+Copaw 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道与用户交互。
+
+---
+
+## ✨ 特性
+
+- 🤖 **多 Agent 协作** - 00 号管理高手 + 01-04 号专业职能 Agent
+- 🧠 **独立记忆** - 每个 Agent 拥有短期/长期记忆
+- 💰 **资源隔离** - 独立 Credit 和模型配额
+- 💵 **成本计算** - 实时成本追踪和报表
+- 🔗 **多渠道** - 飞书、钉钉、QQ、Discord、电报
+- 🌐 **Web 管理端** - 对话式管理界面（仅限 00/04 号）
+- 🐳 **Docker 部署** - 一键启动 PostgreSQL
+- 🔄 **错误处理** - 自动重试和模型降级
+- ⏰ **定时任务** - 每日复盘、每 3 天晚餐交流会
+- 🔍 **全链路追踪** - trace_id + span_id 追溯
+
+---
+
+## 🏗️ 系统架构
+
+```
+用户 → Channels → Gateway → 丘脑 → Agent → 小脑 → PostgreSQL
+
+┌─────────────────────────────────────────────────────────────────┐
+│  前额叶 (Prefrontal)  │  GLM-5  │  深度思考                    │
+├─────────────────────────────────────────────────────────────────┤
+│  丘脑 (Thalamus)      │ Qwen3   │  意图识别 + 路由            │
+├─────────────────────────────────────────────────────────────────┤
+│  小脑 (Cerebellum)    │ Python  │  任务执行 + 工具调用        │
+├─────────────────────────────────────────────────────────────────┤
+│  感官 (Sensors)       │ nano    │  print(文生图)              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🤖 Agent 矩阵
+
+| 编号 | 角色 | 职责 | 沟通风格 |
+|------|------|------|----------|
+| **00** | 🏠 管理高手 | 创建 Agent、初始化、汇报状态 | 主动汇报、确认后执行 |
+| **01** | 🧠 学霸 | 学术搜索、论文调研、多工具检索 | 理性严谨、证据充分 |
+| **02** | 💻 编程高手 | 代码开发、工具链检查、技术调研 | 逻辑缜密、结构化 |
+| **03** | 🎨 创意青年 | 文字创作、绘画提示词、视频脚本 | 发散思维、积极执行 |
+| **04** | 📊 统计学长 | 每日复盘、知识收藏、总结启发 | 善于倾听、归纳整理 |
+
+---
+
+## 🔗 Channels（消息渠道）
+
+| 渠道 | 协议 | 状态 |
 |------|------|------|
-| 飞书 (Feishu/Lark) | `app/channels/feishu.py` | ✅ |
-| 钉钉 (DingTalk) | `app/channels/dingtalk.py` | ✅ |
-| QQ | `app/channels/qq.py` | ✅ |
-| Discord | `app/channels/discord_.py` | ✅ |
-| iMessage (仅 Mac) | `app/channels/imessage.py` | ✅ |
-| Console (Web UI) | `app/channels/console.py` | ✅ |
+| 飞书 | WebSocket | 🔶 开发中 |
+| 钉钉 | WebHook | ⏳ 待开发 |
+| QQ | OneBot | ⏳ 待开发 |
+| Discord | Bot API | ⏳ 待开发 |
+| 电报 | Bot API | ⏳ 待开发 |
 
-### 内置 Skills
-| Skill | 路径 | 功能 |
-|-------|------|------|
-| pdf | `agents/skills/pdf/` | PDF 读取、提取、合并、拆分 |
-| xlsx | `agents/skills/xlsx/` | Excel 读写、公式、图表 |
-| docx | `agents/skills/docx/` | Word 文档处理 |
-| pptx | `agents/skills/pptx/` | PPT 演示文稿 |
-| news | `agents/skills/news/` | 新闻资讯查询 |
-| himalaya | `agents/skills/himalaya/` | 邮件管理 |
-| cron | `agents/skills/cron/` | 定时任务 |
-| browser_visible | `agents/skills/browser_visible/` | 可见浏览器 |
-| file_reader | `agents/skills/file_reader/` | 文本文件读取 |
-
-### Agent 工具 (Tools)
-| Tool | 文件 | 功能 |
-|------|------|------|
-| file_io | `agents/tools/file_io.py` | 文件读写 |
-| shell | `agents/tools/shell.py` | 执行命令 |
-| browser_control | `agents/tools/browser_control.py` | 浏览器控制 |
-| browser_snapshot | `agents/tools/browser_snapshot.py` | 浏览器截图 |
-| memory_search | `agents/tools/memory_search.py` | 记忆搜索 |
-| desktop_screenshot | `agents/tools/desktop_screenshot.py` | 桌面截图 |
-| send_file | `agents/tools/send_file.py` | 发送文件 |
-| get_current_time | `agents/tools/get_current_time.py` | 获取时间 |
+**事件过滤**：支持忽略指定事件类型、用户、关键词
 
 ---
 
-## 版本信息
+## 🚀 快速开始
 
-- **当前版本**: 0.0.2
-- **源码来源**: 从 Python 包 `copaw` (v0.0.2) site-packages 提取
-- **构建基础**: 
-  - [AgentScope](https://github.com/agentscope-ai/agentscope)
-  - [AgentScope Runtime](https://github.com/agentscope-ai/agentscope-runtime)
-  - [ReMe](https://github.com/agentscope-ai/ReMe)
-
----
-
-## 目录结构
-
-```
-copaw/
-├── __init__.py              # 包入口
-├── __version__.py           # 版本号 (0.0.2)
-├── constant.py              # 常量定义
-├── copaw_mgr.py             # 生命周期管理脚本
-│
-├── agents/                  # Agent 核心
-│   ├── react_agent.py       # CoPawAgent (ReAct 推理)
-│   ├── skills_manager.py    # Skills 加载与管理
-│   ├── prompt.py            # Prompt 模板
-│   ├── schema.py            # 数据结构
-│   ├── utils.py             # 工具函数
-│   ├── md_files/           # Markdown 文件处理
-│   ├── memory/             # 记忆系统
-│   ├── skills/             # 内置 Skills (9个)
-│   └── tools/               # Agent 工具集
-│
-├── app/                     # 应用主程序
-│   ├── _app.py             # FastAPI 应用入口
-│   ├── channels/           # 频道实现 (6个)
-│   ├── crons/              # 定时任务
-│   ├── runner/             # AgentRunner 运行器
-│   └── routers/             # API 路由
-│
-├── cli/                     # 命令行工具
-│   ├── main.py             # CLI 入口
-│   ├── app_cmd.py          # 启动命令
-│   ├── init_cmd.py         # 初始化命令
-│   ├── channels_cmd.py     # 频道命令
-│   ├── cron_cmd.py         # 定时任务命令
-│   ├── skills_cmd.py       # Skills 命令
-│   └── ...
-│
-├── config/                  # 配置管理
-├── envs/                    # 环境变量加载
-├── providers/               # 模型提供商
-├── tokenizer/               # 分词器
-└── utils/                   # 工具函数
-```
-
----
-
-## 安装
+### 1. 克隆项目
 
 ```bash
-# 从 PyPI 安装
-pip install copaw
-
-# 或从源码安装
-pip install -e ".[dev]"
-cd console && npm ci && npm run build
-copaw app
+git clone https://github.com/fengzhi09/lhl_copaw_prjs.git
+cd lhl_copaw_prjs/copaw
 ```
 
-### 快速开始
+### 2. 启动 PostgreSQL
 
 ```bash
-# 1. 初始化
-copaw init my-assistant
-
-# 2. 配置频道
-# 参考: https://copaw.agentscope.io/docs/channels
-
-# 3. 启动
-copaw app
+docker run -d \
+  --name copaw-db \
+  -e POSTGRES_DB=copaw \
+  -e POSTGRES_USER=copaw \
+  -e POSTGRES_PASSWORD=your_password \
+  -p 5432:5432 \
+  -v ./data:/var/lib/postgresql/data \
+  postgres:16-alpine
 ```
 
-### 使用 copaw_mgr.py 管理
+### 3. 配置环境
 
 ```bash
-# 初始化配置
-python3 copaw_mgr.py init
+cp config.example.yaml config.yaml
+vim config.yaml
+```
 
-# 启动/停止/重启
-python3 copaw_mgr.py start
-python3 copaw_mgr.py stop
-python3 copaw_mgr.py restart
+### 4. 启动服务
 
-# 状态/日志
-python3 copaw_mgr.py status
-python3 copaw_mgr.py log
+```bash
+cp9 dev              # 开发模式
+cp9 start --daemon  # 生产模式
 ```
 
 ---
 
-## 官方文档
+## 📖 文档
 
-| 主题 | 链接 |
+- [📑 设计文档](./DESIGN.md) - 完整设计规范 (24 章)
+- [🏗️ 架构文档](./ARCHITECTURE.md) - 系统架构详解
+- [🗺️ 路线图](./ROADMAP.md) - 开发计划
+
+---
+
+## 📊 命令
+
+```bash
+cp9                      # 启动系统
+cp9 status               # 查看状态
+cp9 list                 # 列出 Agent
+cp9 create <需求>        # 创建新 Agent
+cp9 credit               # 查看 Credit
+
+# 定时任务
+cp9 cron add "0 18 * * *" daily_report      # 每日 18:00 日报
+cp9 cron add "0 21 * * */3" dinner_meeting # 每 3 天 21:00 晚餐会
+```
+
+---
+
+## 🛠️ 技术栈
+
+| 组件 | 技术 |
 |------|------|
-| 官方文档 | [copaw.agentscope.io](https://copaw.agentscope.io/docs/intro) |
-| AgentScope | [github.com/agentscope-ai](https://github.com/agentscope-ai) |
+| **语言** | Python 3.10+ |
+| **数据库** | PostgreSQL 16 (Docker) |
+| **前额叶** | GLM-5 (智谱) |
+| **丘脑** | Qwen3-0.6B-FP8 (本地 GPU) |
+| **图片** | nano-banana-pro |
+| **渠道** | 飞书/钉钉/QQ/Discord/电报 |
 
 ---
 
-## License
+## 📄 许可证
 
-基于 AgentScope 相关开源协议。
+MIT License
 
 ---
 
-<p align="center">
-  <sub>Built on AgentScope Runtime · CLI: copaw</sub>
-</p>
+## 👤 作者
+
+**卡泡** - 科研编程助理
+
+*让 AI 成为你的智能伙伴*
