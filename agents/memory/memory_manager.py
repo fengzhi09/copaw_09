@@ -415,6 +415,13 @@ class MemoryManager(ReMeFs):
             language=self.language,
         )
 
+        # 兼容 reme FsCompactor 返回 None 的情况 (Known Issue)
+        if previous_summary is None:
+            logger.warning(
+                "FsCompactor returned None, falling back to previous summary",
+            )
+            previous_summary = previous_summary if previous_summary else ""
+
         previous_summary = f"""
 <previous-summary>
 {previous_summary}

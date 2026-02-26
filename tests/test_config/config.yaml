@@ -1,0 +1,44 @@
+# 测试配置文件
+app:
+  name: copaw_test
+  version: "1.0"
+
+config:
+  channel:
+    feishu:
+      enabled: true
+      app_id: "cli_test123"
+      app_secret: "test_secret"
+      bot_prefix: "/ai"
+      encrypt_key: ""
+      verification_token: ""
+      media_dir: "~/.copaw/media"
+      filters:
+        ignore_events: []
+        ignore_users: []
+        ignore_keywords: []
+    
+    dingtalk:
+      enabled: false
+      app_key: ""
+      app_secret: ""
+      agent_id: ""
+      bot_prefix: "/ai"
+      filters: {}
+    
+    qq:
+      enabled: false
+      qq_id: ""
+      token: ""
+      secret: ""
+      filters: {}
+    
+    discord:
+      enabled: false
+      bot_token: ""
+      filters: {}
+    
+    telegram:
+      enabled: false
+      bot_token: ""
+      filters: {}
