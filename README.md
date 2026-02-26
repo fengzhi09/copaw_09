@@ -92,22 +92,17 @@ vim ~/.cp9/config.yaml
 ### 4. 使用 CLI
 
 ```bash
-# 查看帮助
-cp9 --help
-
 # 初始化
-cp9 mgr init -c ~/.cp9/config.yaml
+cp9 mgr init
 
-# 启动服务（后台运行）
-cp9 mgr start -c ~/.cp9/config.yaml
+# 启动服务 (后台运行)
+cp9 mgr start
 
 # 查看状态
 cp9 mgr status
 
-# 测试 Agent
+# 测试
 cp9 test agent -id 00 -msg "你好"
-
-# 列出所有 Agent
 cp9 list agents
 ```
 
@@ -118,46 +113,48 @@ cp9 list agents
 ### 管理命令
 
 ```bash
-cp9 mgr start -c ~/.cp9/config.yaml   # 启动服务
-cp9 mgr stop                          # 停止服务
-cp9 mgr status                        # 查看状态
-cp9 mgr init -c ~/.cp9/config.yaml   # 初始化配置
+cp9 mgr start              # 启动服务 (后台运行)
+cp9 mgr stop              # 停止服务
+cp9 mgr status            # 查看状态
+cp9 mgr init              # 初始化配置
 ```
 
-### 查询命令
+### 配置命令
 
 ```bash
-cp9 get agent 00              # 获取 Agent 信息
-cp9 get channel feishu       # 获取渠道信息
-cp9 get provider minimax     # 获取 Provider 信息
-cp9 status agent             # 查看 Agent 状态
-```
+# 获取
+cp9 get agent 00
+cp9 get channel feishu
 
-### 设置命令
+# 设置
+cp9 set agent 05 '{"enabled": true}'
 
-```bash
-cp9 set agent 05 '{"name":"学术助手","role":"academic"}'
-cp9 set channel feishu '{"enabled":true}'
-```
-
-### 列表命令
-
-```bash
+# 列表
 cp9 list agents
 cp9 list channels
-cp9 list providers
-cp9 list crons
 ```
 
 ### 测试命令
 
 ```bash
-cp9 test agent -id 00 -msg "搜索论文"           # 测试 Agent
-cp9 test channel feishu send -msg "Hello"       # 测试 Channel
-cp9 test provider minimax -model 'minimax-m2.5' -msg "你好"  # 测试 Provider
-cp9 test sensor dispatch -msg "搜索"            # 测试 Sensor
-cp9 test skill feishu-doc -msg "列出知识库"     # 测试 Skill
-cp9 test cron add -agent 01 -msg "日报" -cron "0 9 * * *"  # 添加 Cron
+# 测试 Agent
+cp9 test agent -id 00 -msg "搜索论文"
+
+# 测试 Channel
+cp9 test channel feishu send -msg "Hello"
+
+# 测试 Provider
+cp9 test provider minimax -model 'minimax-m2.5' -msg "你好"
+
+# 测试 Sensor
+cp9 test sensor dispatch -msg "搜索"
+
+# 测试 Skill
+cp9 test skill feishu-doc -msg "列出知识库"
+
+# 测试 Cron
+cp9 test cron list
+cp9 test cron add -agent 04 -id daily -msg "日报"
 ```
 
 ---
