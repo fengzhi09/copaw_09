@@ -174,6 +174,33 @@ cd /home/ace09/bots/copaw_09
 python -m pytest tests/ -v
 ```
 
+### 5.3 TUI 控制台测试
+
+```bash
+# 交互模式
+python -m copaw_09.app.tui
+
+# 单命令模式
+python -m copaw_09.app.tui -c "brain"
+python -m copaw_09.app.tui -c "gateway"
+python -m copaw_09.app.tui -c "router"
+python -m copaw_09.app.tui -c "agent"
+python -m copaw_09.app.tui -c "all"
+```
+
+TUI 命令:
+| 命令 | 说明 |
+|------|------|
+| brain | 测试脑部模块 |
+| gateway | 测试网关模块 |
+| router | 测试路由模块 |
+| agent | 测试 Agent 管理 |
+| feishu | 测试飞书文档 |
+| all | 测试所有模块 |
+| status | 查看模块状态 |
+| clear | 清屏 |
+| quit | 退出 |
+
 ---
 
 ## 六、常见问题
