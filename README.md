@@ -10,8 +10,8 @@
 
 ## 📋 简介
 
-Copaw 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道与用户交互。
-
+Copaw09(cp9) 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道与用户交互。
+项目灵感来自于[CoPaw](http://copaw.agentscope.io/docs/quickstart)
 ---
 
 ## ✨ 特性
