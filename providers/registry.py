@@ -40,6 +40,7 @@ MINIMAX_MODELS: List[ModelInfo] = [
 ]
 
 ZHIPU_MODELS: List[ModelInfo] = [
+    ModelInfo(id="glm-5", name="GLM-5"),
     ModelInfo(id="glm-4-flash", name="GLM-4 Flash"),
     ModelInfo(id="glm-4-plus", name="GLM-4 Plus"),
     ModelInfo(id="glm-4", name="GLM-4"),

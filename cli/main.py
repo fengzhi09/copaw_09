@@ -81,6 +81,11 @@ from .skills_cmd import skills_group  # noqa: E402
 
 _record(".skills_cmd", time.perf_counter() - _t)
 
+_t = time.perf_counter()
+from .db_cmd import db  # noqa: E402
+
+_record(".db_cmd", time.perf_counter() - _t)
+
 _total = time.perf_counter() - _t0_main
 _init_timings.append(("(total imports)", _total))
 logger.debug("%.3fs (total imports)", _total)
@@ -124,6 +129,7 @@ cli.add_command(channels_group)
 cli.add_command(chats_group)
 cli.add_command(clean_cmd)
 cli.add_command(cron_group)
+cli.add_command(db)
 cli.add_command(env_group)
 cli.add_command(init_cmd)
 cli.add_command(models_group)

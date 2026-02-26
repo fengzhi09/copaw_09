@@ -2,19 +2,37 @@
   "providers": {
     "modelscope": {
       "base_url": "https://api-inference.modelscope.cn/v1",
-      "api_key": ""
+      "api_key": "${MODELSCOPE_API_KEY}"
     },
     "dashscope": {
       "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      "api_key": ""
+      "api_key": "${DASHSCOPE_API_KEY}"
+    },
+    "zhipu": {
+      "base_url": "https://open.bigmodel.cn/api/paas/v4",
+      "api_key": "${ZHIPU_API_KEY}"
+    },
+    "minimax": {
+      "base_url": "https://api.minimax.io/v1",
+      "api_key": "${MINIMAX_API_KEY}"
     },
     "custom": {
       "base_url": "https://api.minimaxi.com/v1",
-      "api_key": ""
+      "api_key": "${CUSTOM_API_KEY}"
     }
   },
   "active_llm": {
-    "provider_id": "custom",
-    "model": "MiniMax-M2.5-highspeed"
+    "provider_id": "zhipu",
+    "model": "glm-5"
+  },
+  "sensors": {
+    "print": {
+      "provider": "custom",
+      "model": "nano-banana-pro"
+    },
+    "dispatch": {
+      "provider": "dashscope",
+      "model": "qwen-turbo"
+    }
   }
 }
