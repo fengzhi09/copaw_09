@@ -31,7 +31,17 @@ from sqlalchemy import (
     Index,
     ForeignKey,
 )
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, VECTOR
+try:
+    from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
+    # VECTOR需要pgvector扩展，如果失败则跳过
+    try:
+        from sqlalchemy.dialects.postgresql import VECTOR
+    except ImportError:
+        VECTOR = None
+except ImportError:
+    JSONB = None
+    TIMESTAMP = None
+    VECTOR = None
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -137,7 +147,7 @@ class LongTermMemory(Base):
     title = Column(String(200))
     content = Column(Text)
     tags = Column(JSON, default=list)
-    embedding = Column(VECTOR(1536))  # 向量索引，需要 pgvector 扩展
+    # embedding = Column(VECTOR(1536))  # 向量索引，需要 pgvector 扩展
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
