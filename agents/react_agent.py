@@ -358,13 +358,17 @@ class CoPawAgent(ReActAgent):
         enable_memory_manager: bool = True,
         mcp_clients: Optional[List[Any]] = None,
         memory_manager: MemoryManager | None = None,
+        agent_id: str = "00",
     ):
         """Initialize CoPawAgent.
 
         Args:
             env_context: Optional environment context
             enable_memory_manager: Whether to enable memory manager
+            agent_id: Agent ID for loading specific config
         """
+        self.agent_id = agent_id
+        
         toolkit = Toolkit()
         self._mcp_clients = mcp_clients or []
         self._env_context = env_context
@@ -454,10 +458,39 @@ class CoPawAgent(ReActAgent):
 
     def _build_sys_prompt(self) -> str:
         """Build system prompt from working dir files and env context."""
-        sys_prompt = build_system_prompt_from_working_dir()
+        # 首先尝试加载 Agent 专属配置
+        agent_sys_prompt = self._load_agent_prompt(self.agent_id)
+        if agent_sys_prompt:
+            sys_prompt = agent_sys_prompt
+        else:
+            sys_prompt = build_system_prompt_from_working_dir()
+        
         if self._env_context is not None:
             sys_prompt = self._env_context + "\n\n" + sys_prompt
         return sys_prompt
+    
+    def _load_agent_prompt(self, agent_id: str) -> str:
+        """Load agent-specific system prompt."""
+        import os
+        from pathlib import Path
+        
+        # Agent 配置目录
+        agent_dirs = [
+            Path(__file__).parent / f"agent_{agent_id}_" / "system_prompt.md",
+            Path(WORKING_DIR) / ".." / "agents" / f"agent_{agent_id}_" / "system_prompt.md",
+            Path.home() / ".copaw" / "agents" / f"agent_{agent_id}_" / "system_prompt.md",
+        ]
+        
+        for agent_dir in agent_dirs:
+            if agent_dir.exists():
+                try:
+                    with open(agent_dir, "r", encoding="utf-8") as f:
+                        logger.info(f"Loaded agent {agent_id} prompt from {agent_dir}")
+                        return f.read()
+                except Exception as e:
+                    logger.warning(f"Failed to load agent prompt from {agent_dir}: {e}")
+        
+        return ""
 
     def rebuild_sys_prompt(self) -> None:
         """Rebuild and replace the system prompt.

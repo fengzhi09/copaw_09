@@ -18,6 +18,7 @@ from ..channels.schema import DEFAULT_CHANNEL
 from ...agents.memory import MemoryManager
 from ...agents.react_agent import CoPawAgent
 from ...constant import WORKING_DIR
+from ...app.router import get_router
 
 logger = logging.getLogger(__name__)
 
@@ -166,10 +167,20 @@ class AgentRunner(Runner):
         # Collect all MCP clients
         mcp_clients = list(self._mcp_clients.values())
 
+        # Agent 路由选择
+        router = get_router()
+        first_msg = msgs[0].get_text_content() if msgs else ""
+        agent_id = router.route(first_msg, user_id)
+        
+        logger.info(f"Route to agent: {agent_id}")
+        
+        # TODO: 根据agent_id加载不同的Agent配置
+        # 目前使用默认CoPawAgent
         agent = CoPawAgent(
             env_context=env_context,
             mcp_clients=mcp_clients,
             memory_manager=self.memory_manager,
+            agent_id=agent_id,  # 传递agent_id
         )
         await agent.register_mcp_clients()
         agent.set_console_output_enabled(enabled=False)
