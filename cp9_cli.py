@@ -145,12 +145,18 @@ class CommandDispatcher:
             print(f"🧪 测试 Channel {ch}")
             print(f"   操作: {act}, 消息: {msg}")
             try:
+                # 从 constant 模块读取可用 channel
                 try:
-                    from app.channels import get_channel
+                    from constant import ALL_CHANNELS, get_available_channels
                 except ImportError:
-                    from copaw_09.app.channels import get_channel
-                channel = get_channel(ch)
-                print(f"   Channel: {channel}")
+                    sys.path.insert(0, str(PROJECT_ROOT.parent))
+                    from copaw_09.constant import ALL_CHANNELS, get_available_channels
+                
+                enabled = get_available_channels()
+                print(f"   可用通道: {ALL_CHANNELS}")
+                print(f"   启用通道: {enabled}")
+                print(f"   状态: {'启用' if ch in enabled else '未启用'}")
+                
                 print("✅ Channel 测试完成")
             except Exception as e:
                 import traceback
@@ -180,13 +186,20 @@ class CommandDispatcher:
             print(f"🧪 测试 Sensor {sns}")
             print(f"   消息: {msg}")
             try:
-                try:
-                    from sensors import get_sensor
-                except ImportError:
-                    from copaw_09.sensors import get_sensor
-                sensor = get_sensor(sns)
-                result = sensor(msg)
-                print(f"   结果: {result}")
+                # 添加项目路径
+                sys.path.insert(0, str(PROJECT_ROOT))
+                sys.path.insert(0, str(PROJECT_ROOT.parent))
+                from sensors import SensorFactory
+                
+                if sns == "dispatch":
+                    sensor = SensorFactory.get_dispatch()
+                    result = sensor.classify_intent(msg)
+                    print(f"   结果: {result}")
+                elif sns == "print":
+                    sensor = SensorFactory.get_print()
+                    print(f"   Print Sensor 已加载 (需要 API key)")
+                else:
+                    print(f"   未知的 Sensor: {sns}")
                 print("✅ Sensor 测试完成")
             except Exception as e:
                 import traceback
