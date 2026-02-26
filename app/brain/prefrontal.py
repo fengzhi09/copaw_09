@@ -92,7 +92,7 @@ class Prefrontal:
         "MiniMax-M2.5": {
             "provider": ModelProvider.MINIMAX,
             "api_key_env": "MINIMAX_API_KEY",
-            "api_base": "https://api.minimax.chat/v1",
+            "api_base": "https://api.minimaxi.com/v1",
             "max_tokens": 8192,
         },
     }

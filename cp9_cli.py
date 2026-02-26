@@ -193,7 +193,7 @@ class CommandDispatcher:
                 
                 # 检查 API key
                 import os
-                api_key = os.environ.get("DASHSCOPE_API_KEY") or os.environ.get("ZHIPU_API_KEY") or os.environ.get("MINIMAX_API_KEY")
+                api_key = os.environ.get("DASHSCOPE_API_KEY") or os.environ.get("ZHIPU_API_KEY") or os.environ.get("MINIMAX_API_KEY") or os.getenv("MINIMAX_API_KEY")
                 if not api_key:
                     print("   ⚠️  警告: 未配置 API key (DASHSCOPE_API_KEY/ZHIPU_API_KEY/MINIMAX_API_KEY)")
                     print("   仅测试配置加载...")
