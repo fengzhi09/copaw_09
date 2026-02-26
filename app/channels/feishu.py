@@ -43,6 +43,7 @@ from ...config.config import FeishuConfig as FeishuChannelConfig
 from ...config.utils import get_config_path
 from .schema import Incoming, IncomingContentItem
 from .base import BaseChannel, OnReplySent, OutgoingContentPart, ProcessHandler
+from .filter import create_filter_from_config
 
 if TYPE_CHECKING:
     from agentscope_runtime.engine.schemas.agent_schemas import AgentRequest
@@ -133,6 +134,7 @@ class FeishuChannel(BaseChannel):
         encrypt_key: str = "",
         verification_token: str = "",
         media_dir: str = "~/.copaw/media",
+        filters: dict = None,
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ):
@@ -148,6 +150,14 @@ class FeishuChannel(BaseChannel):
         self.encrypt_key = encrypt_key or ""
         self.verification_token = verification_token or ""
         self._media_dir = Path(media_dir).expanduser()
+        
+        # Event filter
+        from .filter import ChannelEventFilter
+        self._filter = ChannelEventFilter(
+            ignore_events=filters.get("ignore_events", []) if filters else [],
+            ignore_users=filters.get("ignore_users", []) if filters else [],
+            ignore_keywords=filters.get("ignore_keywords", []) if filters else [],
+        )
 
         self._client: Any = None
         self._ws_client: Any = None
@@ -198,6 +208,15 @@ class FeishuChannel(BaseChannel):
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ) -> "FeishuChannel":
+        # Extract filters from config
+        filters = None
+        if hasattr(config, 'filters'):
+            filters = {
+                "ignore_events": config.filters.ignore_events if hasattr(config.filters, 'ignore_events') else [],
+                "ignore_users": config.filters.ignore_users if hasattr(config.filters, 'ignore_users') else [],
+                "ignore_keywords": config.filters.ignore_keywords if hasattr(config.filters, 'ignore_keywords') else [],
+            }
+        
         return cls(
             process=process,
             enabled=config.enabled,
@@ -207,6 +226,7 @@ class FeishuChannel(BaseChannel):
             encrypt_key=config.encrypt_key or "",
             verification_token=config.verification_token or "",
             media_dir=config.media_dir or "~/.copaw/media",
+            filters=filters,
             on_reply_sent=on_reply_sent,
             show_tool_details=show_tool_details,
         )
@@ -657,6 +677,16 @@ class FeishuChannel(BaseChannel):
                 content=content_items if content_items else None,
                 meta=meta,
             )
+            
+            # Apply event filter
+            if not self._filter.should_process({
+                "type": msg_type,
+                "user_id": sender_id,
+                "content": text
+            }):
+                logger.info("feishu message filtered: type=%s user=%s", msg_type, sender_id)
+                return
+            
             logger.info(
                 "feishu recv from=%s chat=%s msg_id=%s type=%s text_len=%s",
                 sender_display[:40],
