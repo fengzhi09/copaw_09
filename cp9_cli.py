@@ -93,17 +93,34 @@ class CommandDispatcher:
             print("  04  统计学长  collector active")
         elif r == "channels":
             print("📱 Channels:")
-            print("  feishu   ✅ 启用")
-            print("  tui      ✅ 启用")
-            print("  dingtalk ❌ 禁用")
+            # 从 constant 读取可用通道
+            try:
+                from constant import ALL_CHANNELS, get_available_channels
+                enabled = get_available_channels()
+                for ch in ALL_CHANNELS:
+                    status = "✅" if ch in enabled else "❌"
+                    print(f"  {ch:<12} {status}")
+            except Exception:
+                # 降级显示
+                print("  feishu   ✅")
+                print("  console  ✅")
+                print("  dingtalk ✅")
         elif r == "providers":
             print("🤖 Providers:")
             print("  glm-5    ✅ 启用")
             print("  minimax  ❌ 禁用")
         elif r == "skills":
             print("🎯 Skills:")
-            print("  academic_search   ✅")
-            print("  code_analysis    ✅")
+            # 扫描 skills 目录获取实际技能
+            skills_dir = PROJECT_ROOT / "agents" / "skills"
+            if skills_dir.exists():
+                for item in sorted(skills_dir.iterdir()):
+                    if item.is_dir() and not item.name.startswith("_"):
+                        skill_md = item / "SKILL.md"
+                        status = "✅" if skill_md.exists() else "❌"
+                        print(f"  {item.name:<20} {status}")
+            else:
+                print("  (skills 目录不存在)")
         elif r == "sensors":
             print("👀 Sensors:")
             print("  print    ✅")
@@ -206,15 +223,97 @@ class CommandDispatcher:
                 print(f"❌ 测试失败: {e}")
                 traceback.print_exc()
         elif t == "skill":
-            sk = self.args.skill or "feishu-doc"
-            print(f"🧪 测试 Skill {sk}")
-            print(f"✅ Skill 测试完成")
+            sk = self.args.skill or ""
+            print(f"🧪 测试 Skill")
+            try:
+                # 直接扫描 skills 目录获取可用技能
+                skills_dir = PROJECT_ROOT / "agents" / "skills"
+                available_skills = []
+                
+                if skills_dir.exists():
+                    for item in skills_dir.iterdir():
+                        if item.is_dir() and not item.name.startswith("_"):
+                            # 检查是否有 SKILL.md
+                            skill_md = item / "SKILL.md"
+                            if skill_md.exists():
+                                available_skills.append(item.name)
+                
+                print(f"   可用技能: {available_skills}")
+                
+                # 检查指定 skill 是否存在
+                if sk and sk in available_skills:
+                    skill_file = skills_dir / sk / "SKILL.md"
+                    with open(skill_file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()[:5]
+                        print(f"   描述: {lines[0].strip() if lines else 'N/A'}")
+                    print(f"   状态: ✅ 已安装")
+                elif sk:
+                    print(f"   状态: ❌ 未找到")
+                else:
+                    print(f"   指定技能: {sk or '未指定'}")
+                    
+                print("✅ Skill 测试完成")
+            except Exception as e:
+                import traceback
+                print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
         elif t == "cron":
-            act = self.args.cron_action or "add"
+            act = self.args.cron_action or "list"
             aid = self.args.id or "00"
             msg = self.args.msg or "任务"
             print(f"🧪 Cron {act}: Agent {aid}, 消息: {msg}")
-            print(f"✅ Cron 完成")
+            try:
+                import json  # 确保 json 已导入
+                
+                # 直接读取 jobs.json 文件（使用 /tmp 或项目目录）
+                jobs_file = PROJECT_ROOT / "data" / "jobs.json"
+                
+                # 如果 data 目录不可写，使用 /tmp
+                if not os.access(PROJECT_ROOT / "data", os.W_OK):
+                    jobs_file = Path("/tmp/copaw_jobs.json")
+                
+                if jobs_file.exists():
+                    try:
+                        with open(jobs_file, 'r', encoding='utf-8') as f:
+                            content = f.read().strip()
+                            if content:
+                                data = json.loads(content)
+                                jobs = data.get('jobs', [])
+                                print(f"   任务数: {len(jobs)}")
+                                for job in jobs:
+                                    print(f"   - {job.get('id', 'N/A')}: {job.get('cron', 'N/A')} (enabled={job.get('enabled', True)})")
+                            else:
+                                print(f"   任务文件为空")
+                                jobs = []
+                    except json.JSONDecodeError:
+                        print(f"   任务文件格式错误")
+                        jobs = []
+                else:
+                    print(f"   任务文件不存在: {jobs_file}")
+                    print(f"   创建默认任务...")
+                    # 创建默认 jobs.json
+                    jobs_file.parent.mkdir(parents=True, exist_ok=True)
+                    default_jobs = {
+                        "version": 1,
+                        "jobs": [
+                            {
+                                "id": "daily_report",
+                                "agent_id": "04",
+                                "cron": "0 18 * * *",
+                                "enabled": True,
+                                "message": "生成每日报告"
+                            }
+                        ]
+                    }
+                    with open(jobs_file, 'w', encoding='utf-8') as f:
+                        json.dump(default_jobs, f, ensure_ascii=False, indent=2)
+                    print(f"   ✅ 已创建默认任务")
+                
+                print("✅ Cron 测试完成")
+            except Exception as e:
+                import traceback
+                print(f"❌ 测试失败: {e}")
+                traceback.print_exc()
 
 
 def main():

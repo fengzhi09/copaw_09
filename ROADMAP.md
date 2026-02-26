@@ -17,7 +17,9 @@
 
 ### v1.1 - 核心功能 🔶 开发中
 
+- [x] CLI 命令工具 (cp9_cli.py)
 - [x] Gateway 开发
+- [x] CLI 测试命令 (test agent/channel/provider/sensor/skill/cron)
 - [ ] 丘脑模块 (Qwen3-0.6B-FP8)
 - [ ] 前额叶集成 (GLM-5)
 - [ ] 00 号管理高手开发
