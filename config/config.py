@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Optional, Union
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from ..constant import (
@@ -8,11 +8,38 @@ from ..constant import (
 )
 
 
+class ChannelFiltersConfig(BaseModel):
+    """Channel event filters configuration.
+    
+    Events matching these filters will be ignored (not processed).
+    """
+    # 忽略的事件类型
+    ignore_events: List[str] = Field(
+        default_factory=list,
+        description="Event types to ignore"
+    )
+    # 忽略的用户 ID
+    ignore_users: List[str] = Field(
+        default_factory=list,
+        description="User IDs to ignore"
+    )
+    # 忽略的关键词（消息内容包含这些词则忽略）
+    ignore_keywords: List[str] = Field(
+        default_factory=list,
+        description="Keywords to ignore in message content"
+    )
+
+
 class BaseChannelConfig(BaseModel):
     """Base for channel config (read from config.json, no env)."""
 
     enabled: bool = False
     bot_prefix: str = ""
+    # 事件过滤配置
+    filters: ChannelFiltersConfig = Field(
+        default_factory=ChannelFiltersConfig,
+        description="Event filters"
+    )
 
 
 class IMessageChannelConfig(BaseChannelConfig):
@@ -41,6 +68,20 @@ class FeishuConfig(BaseChannelConfig):
     encrypt_key: str = ""
     verification_token: str = ""
     media_dir: str = "~/.copaw/media"
+    
+    # 默认飞书过滤配置
+    filters: ChannelFiltersConfig = Field(
+        default_factory=lambda: ChannelFiltersConfig(
+            ignore_events=[
+                "pin_added",
+                "pin_removed", 
+                "reaction_added",
+                "reaction_removed",
+                "message_created",
+            ],
+            ignore_keywords=["[表情]", "收到"]
+        )
+    )
 
 
 class QQConfig(BaseChannelConfig):
