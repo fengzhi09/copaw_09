@@ -7,8 +7,8 @@
 ## 服务配置
 
 - **老 Copaw (9090)**: copaw 包自带服务
-- **新 cp9 (94179)**: copaw_09 开发版
-- **运行命令**: `uvicorn copaw_09.app:app --host 0.0.0.0 --port 94179`
+- **新 cp9 (94179)**: cp9 开发版
+- **运行命令**: `uvicorn cp9.app:app --host 0.0.0.0 --port 94179`
 - **API 文档**: http://localhost:94179/docs
 
 ---
