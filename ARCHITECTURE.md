@@ -365,8 +365,9 @@ ERROR_HANDLER = {
 ### 9.2 降级链
 
 ```
-glm-5 → MiniMax-M2.5-highspeed → glm-4
+glm-5 → MiniMax-M2.5-highspeed → MiniMax-M2.5 → Kimi-K2 → qwen3-max
 nano-banana-pro → dall-e-3 → stable-diffusion
+
 ```
 
 ---
