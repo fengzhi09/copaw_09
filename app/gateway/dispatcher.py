@@ -6,11 +6,16 @@ Message Dispatcher - 消息分发器
 """
 
 import logging
+import sys
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-from app.router import AgentRouter, get_router
+# 添加项目根目录到路径
+if '/home/ace09/bots' not in sys.path:
+    sys.path.insert(0, '/home/ace09/bots')
+
+from copaw_09.app.router import AgentRouter, get_router
 
 
 logger = logging.getLogger("gateway.dispatcher")

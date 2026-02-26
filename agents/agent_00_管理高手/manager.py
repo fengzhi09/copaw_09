@@ -13,9 +13,36 @@
 import json
 import os
 import shutil
+import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from dataclasses import dataclass, field
+
+from .requirement import RequirementAnalyzer
+from .collaborator import TaskCollaborator
+from .reporter import StatusReporter
+
+
+@dataclass
+class AgentSpec:
+    """Agent 规格"""
+    id: str = ""
+    name: str = ""
+    role: str = ""
+    skills: Dict[str, List[str]] = field(default_factory=lambda: {"required": [], "optional": []})
+    quota: str = "中等"
+    channels: List[str] = field(default_factory=lambda: ["feishu"])
+    permissions: List[str] = field(default_factory=list)
+
+
+@dataclass
+class CreateResult:
+    """创建结果"""
+    success: bool
+    agent_id: str = ""
+    message: str = ""
+    agent_dir: Path = None
 
 
 class AgentCreator:
@@ -24,66 +51,32 @@ class AgentCreator:
     def __init__(self, base_path: str = None):
         self.base_path = Path(base_path or "~/.copaw/agents")
         self.base_path = self.base_path.expanduser()
+        self.base_path.mkdir(parents=True, exist_ok=True)
     
-    def create_agent_spec(self, user_requirement: str) -> Dict[str, Any]:
+    def create_agent_spec(self, user_requirement: str) -> AgentSpec:
         """
         根据用户需求生成 Agent 规格。
         
-        返回规格字典，包含：
-        - id: Agent 编号
-        - name: Agent 名称
-        - role: 角色定位
-        - skills: 技能配置
-        - quota: 资源配额
+        Args:
+            user_requirement: 用户需求描述
+        
+        Returns:
+            AgentSpec 规格对象
         """
-        # 简单的关键词匹配生成规格
-        # TODO: 使用 LLM 智能分析
-        
-        requirement_lower = user_requirement.lower()
-        
-        spec = {
-            "id": self._generate_agent_id(),
-            "name": "",
-            "role": "",
-            "skills": {
-                "required": [],
-                "optional": []
-            },
-            "quota": "中等",
-            "channels": ["feishu"],
-            "permissions": []
-        }
-        
-        # 关键词匹配
-        if any(w in requirement_lower for w in ["学术", "论文", "研究", "调研"]):
-            spec["name"] = "学术助手"
-            spec["role"] = "academic"
-            spec["skills"]["required"] = ["academic_search", "paper_review"]
-            
-        elif any(w in requirement_lower for w in ["代码", "编程", "开发", "bug"]):
-            spec["name"] = "编程助手"
-            spec["role"] = "developer"
-            spec["skills"]["required"] = ["code_analysis", "code_generation"]
-            
-        elif any(w in requirement_lower for w in ["创意", "写作", "文案", "画"]):
-            spec["name"] = "创意助手"
-            spec["role"] = "creative"
-            spec["skills"]["required"] = ["text_creative", "image_prompt"]
-            
-        else:
-            spec["name"] = "通用助手"
-            spec["role"] = "general"
-            spec["skills"]["required"] = []
-        
-        return spec
+        # 使用需求分析器
+        analyzer = RequirementAnalyzer()
+        return analyzer.analyze(user_requirement)
     
     def _generate_agent_id(self) -> str:
         """生成新的 Agent ID"""
         existing = self._get_existing_ids()
         
+        # 预定义 Agent (00-04) 保留
+        reserved = {"00", "01", "02", "03", "04"}
+        
         # 查找最小可用编号
         for i in range(5, 99):
-            if f"{i:02d}" not in existing:
+            if f"{i:02d}" not in existing and f"{i:02d}" not in reserved:
                 return f"{i:02d}"
         
         return "99"
@@ -102,10 +95,10 @@ class AgentCreator:
                     ids.append(parts[1])
         return ids
     
-    def create_agent_directory(self, spec: Dict[str, Any]) -> Path:
+    def create_agent_directory(self, spec: AgentSpec) -> Path:
         """根据规格创建 Agent 目录"""
-        agent_id = spec["id"]
-        agent_name = spec.get("name", f"Agent_{agent_id}")
+        agent_id = spec.id or self._generate_agent_id()
+        agent_name = spec.name or f"Agent_{agent_id}"
         
         agent_dir = self.base_path / f"agent_{agent_id}_{agent_name}"
         agent_dir.mkdir(parents=True, exist_ok=True)
@@ -121,20 +114,114 @@ class AgentCreator:
         config = {
             "id": agent_id,
             "name": agent_name,
-            "role": spec.get("role", "general"),
+            "role": spec.role,
             "status": "active",
             "created_at": datetime.now().isoformat(),
-            "quota": spec.get("quota", "中等"),
-            "skills": spec.get("skills", {}),
-            "channels": spec.get("channels", ["feishu"]),
-            "permissions": spec.get("permissions", [])
+            "quota": spec.quota,
+            "skills": spec.skills,
+            "channels": spec.channels,
+            "permissions": spec.permissions
         }
         
         config_file = agent_dir / ".meta.json"
         with open(config_file, "w", encoding="utf-8") as f:
             json.dump(config, f, ensure_ascii=False, indent=2)
         
+        # 创建 system_prompt.md
+        self._create_system_prompt(agent_dir, spec)
+        
+        # 创建 guard.md
+        self._create_guard_md(agent_dir, spec)
+        
         return agent_dir
+    
+    def _create_system_prompt(self, agent_dir: Path, spec: AgentSpec):
+        """创建 system_prompt.md"""
+        content = f"""# {spec.name} - 系统提示词
+
+## 角色
+
+你是 **{spec.name}**，角色：{spec.role}。
+
+## 核心能力
+
+{self._generate_skills_description(spec.skills)}
+
+## 沟通风格
+
+- 专业、清晰、高效
+- 使用中文交流
+
+## 注意事项
+
+- 遵守系统规范
+- 保护用户隐私
+"""
+        (agent_dir / "system_prompt.md").write_text(content, encoding="utf-8")
+    
+    def _create_guard_md(self, agent_dir: Path, spec: AgentSpec):
+        """创建 guard.md"""
+        content = f"""# {spec.name} - 安全检查清单
+
+## 1. 身份认证
+
+- [x] 验证用户身份
+- [x] 检查权限
+
+## 2. 内容安全
+
+- [x] 过滤敏感词
+- [x] 版权合规
+
+## 3. 审计日志
+
+- [x] 记录操作历史
+
+---
+
+**最后更新**: {datetime.now().strftime('%Y-%m-%d')}
+"""
+        (agent_dir / "guard.md").write_text(content, encoding="utf-8")
+    
+    def _generate_skills_description(self, skills: Dict[str, List[str]]) -> str:
+        """生成技能描述"""
+        lines = []
+        
+        required = skills.get("required", [])
+        if required:
+            lines.append("### 必备技能")
+            for skill in required:
+                lines.append(f"- {skill}")
+        
+        optional = skills.get("optional", [])
+        if optional:
+            lines.append("### 可选技能")
+            for skill in optional:
+                lines.append(f"- {skill}")
+        
+        return "\n".join(lines) if lines else "- 通用能力"
+    
+    def create(self, spec: AgentSpec) -> CreateResult:
+        """创建 Agent"""
+        try:
+            # 生成 ID
+            if not spec.id:
+                spec.id = self._generate_agent_id()
+            
+            # 创建目录
+            agent_dir = self.create_agent_directory(spec)
+            
+            return CreateResult(
+                success=True,
+                agent_id=spec.id,
+                message=f"Agent {spec.id} ({spec.name}) 创建成功",
+                agent_dir=agent_dir
+            )
+        except Exception as e:
+            return CreateResult(
+                success=False,
+                message=f"创建失败: {str(e)}"
+            )
 
 
 class AgentManager:
@@ -148,15 +235,26 @@ class AgentManager:
         """列出所有 Agent"""
         agents = []
         
-        if not self.base_path.exists():
-            return agents
+        # 预定义 Agent
+        predefined = {
+            "00": {"name": "管理高手", "role": "master", "status": "active"},
+            "01": {"name": "学霸", "role": "academic", "status": "active"},
+            "02": {"name": "编程高手", "role": "developer", "status": "active"},
+            "03": {"name": "创意青年", "role": "creative", "status": "active"},
+            "04": {"name": "统计学长", "role": "collector", "status": "active"},
+        }
         
-        for d in self.base_path.iterdir():
-            if d.is_dir() and d.name.startswith("agent_"):
-                meta_file = d / ".meta.json"
-                if meta_file.exists():
-                    with open(meta_file, "r", encoding="utf-8") as f:
-                        agents.append(json.load(f))
+        for aid, info in predefined.items():
+            agents.append({"id": aid, **info})
+        
+        # 自定义 Agent
+        if self.base_path.exists():
+            for d in self.base_path.iterdir():
+                if d.is_dir() and d.name.startswith("agent_"):
+                    meta_file = d / ".meta.json"
+                    if meta_file.exists():
+                        with open(meta_file, "r", encoding="utf-8") as f:
+                            agents.append(json.load(f))
         
         return sorted(agents, key=lambda x: x.get("id", ""))
     
@@ -172,14 +270,48 @@ class AgentManager:
         """获取所有 Agent 状态"""
         agents = self.list_agents()
         
-        status = {
+        return {
             "total": len(agents),
             "active": sum(1 for a in agents if a.get("status") == "active"),
             "inactive": sum(1 for a in agents if a.get("status") == "inactive"),
             "agents": agents
         }
+    
+    def update_agent_status(self, agent_id: str, status: str) -> bool:
+        """更新 Agent 状态"""
+        # 预定义 Agent 不能修改
+        if agent_id in ["00", "01", "02", "03", "04"]:
+            return False
         
-        return status
+        if not self.base_path.exists():
+            return False
+        
+        for d in self.base_path.iterdir():
+            if d.is_dir() and d.name.startswith(f"agent_{agent_id}_"):
+                meta_file = d / ".meta.json"
+                if meta_file.exists():
+                    with open(meta_file, "r", encoding="utf-8") as f:
+                        config = json.load(f)
+                    config["status"] = status
+                    with open(meta_file, "w", encoding="utf-8") as f:
+                        json.dump(config, f, ensure_ascii=False, indent=2)
+                    return True
+        return False
+    
+    def delete_agent(self, agent_id: str) -> bool:
+        """删除 Agent"""
+        # 预定义 Agent 不能删除
+        if agent_id in ["00", "01", "02", "03", "04"]:
+            return False
+        
+        if not self.base_path.exists():
+            return False
+        
+        for d in self.base_path.iterdir():
+            if d.is_dir() and d.name.startswith(f"agent_{agent_id}_"):
+                shutil.rmtree(d)
+                return True
+        return False
 
 
 class RequirementClarifier:
@@ -188,45 +320,25 @@ class RequirementClarifier:
     @staticmethod
     def generate_clarification_questions(requirement: str) -> List[str]:
         """生成需要确认的问题列表"""
-        questions = []
-        
-        requirement_lower = requirement.lower()
-        
-        # 检查是否需要确认角色
-        if not any(w in requirement_lower for w in ["助手", "高手", "专家", "学霸", "编程", "创意"]):
-            questions.append("请问这个 Agent 的角色定位是什么？（如：学术助手、编程高手、创意专家等）")
-        
-        # 检查是否需要确认技能
-        if "技能" not in requirement and "能力" not in requirement:
-            questions.append("请问需要具备哪些技能或能力？")
-        
-        # 检查是否需要确认资源配额
-        if "配额" not in requirement and "credit" not in requirement.lower():
-            questions.append("请问资源配额需求是什么？（轻量/一般/中等/挑战/深度）")
-        
-        # 检查是否需要确认沟通渠道
-        if "渠道" not in requirement and "飞书" not in requirement and "钉钉" not in requirement:
-            questions.append("需要通过哪些渠道与用户沟通？（飞书/钉钉/QQ等）")
-        
-        return questions[:3]  # 最多返回3个问题
+        analyzer = RequirementAnalyzer()
+        return analyzer.generate_questions(requirement)
     
     @staticmethod
-    def format_confirmation(spec: Dict[str, Any]) -> str:
+    def format_confirmation(spec: AgentSpec) -> str:
         """格式化确认信息"""
         lines = [
             "📋 **需求确认**",
             "",
-            f"**Agent 编号**: {spec.get('id', '待分配')}",
-            f"**Agent 名称**: {spec.get('name', '待定')}",
-            f"**角色定位**: {spec.get('role', '待定')}",
-            f"**资源配额**: {spec.get('quota', '中等')}",
+            f"**Agent 编号**: {spec.id or '待分配'}",
+            f"**Agent 名称**: {spec.name or '待定'}",
+            f"**角色定位**: {spec.role or '待定'}",
+            f"**资源配额**: {spec.quota}",
             "",
             "**技能配置**:",
         ]
         
-        skills = spec.get("skills", {})
-        required = skills.get("required", [])
-        optional = skills.get("optional", [])
+        required = spec.skills.get("required", [])
+        optional = spec.skills.get("optional", [])
         
         if required:
             lines.append(f"  必备: {', '.join(required)}")
@@ -242,10 +354,78 @@ class RequirementClarifier:
         return "\n".join(lines)
 
 
+class Agent00Service:
+    """00 号管理高手服务 - 对外统一接口"""
+    
+    def __init__(self):
+        self.creator = AgentCreator()
+        self.manager = AgentManager()
+        self.collaborator = TaskCollaborator()
+        self.reporter = StatusReporter(self.manager)
+    
+    async def handle_create_request(self, requirement: str) -> Dict[str, Any]:
+        """处理创建请求"""
+        # 1. 分析需求
+        spec = self.creator.create_agent_spec(requirement)
+        
+        # 2. 生成确认问题
+        questions = RequirementClarifier.generate_clarification_questions(requirement)
+        
+        if questions:
+            return {
+                "need_confirm": True,
+                "questions": questions,
+                "spec": spec
+            }
+        
+        # 3. 直接创建
+        result = self.creator.create(spec)
+        
+        return {
+            "need_confirm": False,
+            "success": result.success,
+            "agent_id": result.agent_id,
+            "message": result.message
+        }
+    
+    async def confirm_create(self, spec: AgentSpec) -> CreateResult:
+        """确认创建"""
+        return self.creator.create(spec)
+    
+    async def handle_task(self, task: str, context: Dict = None) -> Dict[str, Any]:
+        """处理任务"""
+        # 复杂任务 -> 协作处理
+        if self._is_complex_task(task):
+            return await self.collaborator.collaborate(task, context or {})
+        
+        # 简单任务 -> 路由到对应 Agent
+        from app.brain import get_thalamus
+        thalamus = get_thalamus()
+        agent_id = thalamus.route_message(task)
+        
+        return {
+            "type": "route",
+            "agent_id": agent_id,
+            "task": task
+        }
+    
+    def _is_complex_task(self, task: str) -> bool:
+        """判断是否复杂任务"""
+        complex_keywords = ["调研", "开发", "创建", "分析", "报告", "多个"]
+        return any(kw in task for kw in complex_keywords)
+    
+    def get_status_report(self) -> Dict[str, Any]:
+        """获取状态报告"""
+        return self.reporter.generate_report()
+
+
 # ==================== Exports ====================
 
 __all__ = [
+    "AgentSpec",
+    "CreateResult",
     "AgentCreator",
-    "AgentManager", 
+    "AgentManager",
     "RequirementClarifier",
+    "Agent00Service",
 ]

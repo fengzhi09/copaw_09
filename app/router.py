@@ -5,8 +5,14 @@ Agent Router - Agent 路由选择
 根据消息内容选择合适的 Agent 处理。
 """
 
+import sys
 from typing import Optional, Dict, Any
-from agents.registry import get_registry
+
+# 添加项目根目录到路径
+if '/home/ace09/bots' not in sys.path:
+    sys.path.insert(0, '/home/ace09/bots')
+
+from copaw_09.agents.registry import get_registry
 
 
 class AgentRouter:
