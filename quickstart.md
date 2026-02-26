@@ -6,7 +6,7 @@
 
 ## 一、系统简介
 
-Copaw 是一个多 Agent 协作系统，包含：
+Copaw (cp9) 是一个多 Agent 协作系统，包含：
 
 | Agent | 编号 | 职责 |
 |-------|------|------|
@@ -30,12 +30,12 @@ Copaw 是一个多 Agent 协作系统，包含：
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/lhl coping/copaw_09.git
-cd copaw_09
+git clone https://github.com/fengzhi09/lhl_copaw_prjs.git
+cd lhl_copaw_prjs/copaw
 
 # 2. 创建虚拟环境
-conda create -n copaw python=3.12
-conda activate copaw
+conda create -n cp9 python=3.12
+conda activate cp9
 
 # 3. 安装依赖
 pip install -r requirements.txt
@@ -58,40 +58,116 @@ export MINIMAX_API_KEY="your_minimax_key"
 
 ### 2.4 配置文件
 
-创建 `~/.copaw_mgr.yaml`:
+创建 `~/.cp9/config.yaml`:
 
 ```yaml
 app:
-  name: copaw
+  name: cp9
   version: "1.0"
 
-config:
-  channel:
-    feishu:
-      enabled: true
-      app_id: "${FEISHU_APP_ID}"
-      app_secret: "${FEISHU_APP_SECRET}"
-      bot_prefix: "/ai"
-      filters:
-        ignore_keywords: []
-        ignore_users: []
+mgr:
+  log_level: info
+
+channels:
+  feishu:
+    enabled: true
+    app_id: "${FEISHU_APP_ID}"
+    app_secret: "${FEISHU_APP_SECRET}"
+    bot_prefix: "/ai"
+
+providers:
+  minimax:
+    enabled: true
+    api_key: "${MINIMAX_API_KEY}"
+  zhipu:
+    enabled: true
+    api_key: "${ZHIPU_API_KEY}"
 ```
 
 ---
 
-## 三、使用方法
+## 三、CLI 命令
 
-### 3.1 启动系统
+### 3.1 管理命令 (mgr)
 
 ```bash
-# 方式1: 直接运行
-python -m app.main
+# 初始化配置
+cp9 mgr init -c ~/.cp9/config.yaml
 
-# 方式2: 使用启动脚本
-bash start.sh
+# 启动服务（后台运行）
+cp9 mgr start -c ~/.cp9/config.yaml
+
+# 停止服务
+cp9 mgr stop
+
+# 查看状态
+cp9 mgr status
 ```
 
-### 3.2 通过飞书对话
+### 3.2 查询命令
+
+```bash
+# 获取资源
+cp9 get agent 00
+cp9 get channel feishu
+cp9 get provider minimax
+
+# 查看状态
+cp9 status agent
+cp9 status channel
+cp9 status provider
+```
+
+### 3.3 设置命令
+
+```bash
+# 设置资源配置
+cp9 set agent 05 '{"name":"学术助手","role":"academic"}'
+cp9 set channel feishu '{"enabled":true}'
+cp9 set provider minimax '{"api_key":"xxx"}'
+```
+
+### 3.4 列表命令
+
+```bash
+# 列出所有资源
+cp9 list agents
+cp9 list channels
+cp9 list providers
+cp9 list skills
+cp9 list crons
+```
+
+### 3.5 测试命令
+
+```bash
+# 测试 Agent
+cp9 test agent -id 00 -msg "你好"
+cp9 test agent -id 01 -msg "搜索机器学习论文"
+
+# 测试 Channel
+cp9 test channel feishu send -msg "Hello"
+cp9 test channel tui recv -msg "测试消息"
+
+# 测试 Provider
+cp9 test provider minimax -model 'minimax-m2.5' -msg "你好"
+
+# 测试 Sensor
+cp9 test sensor dispatch -msg "搜索论文"
+
+# 测试 Skill
+cp9 test skill feishu-doc -msg "列出知识库"
+
+# 测试 Cron
+cp9 test cron add -agent 01 -msg "每日调研" -cron "0 9 * * *"
+cp9 test cron del -id <task_id>
+```
+
+---
+
+## 四、使用示例
+
+### 4.1 通过飞书对话
 
 | 命令 | 说明 |
 |------|------|
@@ -101,7 +177,7 @@ bash start.sh
 | `@AI 创建新 Agent` | 系统管理 |
 | `@AI 查看本月成本` | 统计报表 |
 
-### 3.3 创建新 Agent
+### 4.2 创建新 Agent
 
 ```
 用户: 创建一个学术助手
@@ -118,21 +194,21 @@ AI: ✅ Agent 创建成功！
 
 ---
 
-## 四、模块说明
+## 五、模块说明
 
-### 4.1 Gateway (网关)
+### 5.1 Gateway (网关)
 
 消息入口，负责：
 - 身份认证
 - 事件过滤
 - 消息分发
 
-### 4.2 Brain (脑部)
+### 5.2 Brain (脑部)
 
 - **丘脑 (Thalamus)**: 意图识别、路由决策
 - **前额叶 (Prefrontal)**: 深度思考、推理规划
 
-### 4.3 Channels (渠道)
+### 5.3 Channels (渠道)
 
 支持的通讯渠道：
 - 飞书
@@ -141,65 +217,10 @@ AI: ✅ Agent 创建成功！
 - Discord
 - Telegram
 
-### 4.4 记忆系统
+### 5.4 记忆系统
 
 - **短期记忆**: 当前会话上下文
 - **长期记忆**: 重要信息持久化
-
----
-
-## 五、开发指南
-
-### 5.1 项目结构
-
-```
-copaw_09/
-├── app/
-│   ├── brain/          # 脑部模块
-│   ├── channels/       # 渠道适配
-│   ├── gateway/        # 网关
-│   └── router.py       # 路由
-├── agents/
-│   ├── agent_00_管理高手/
-│   ├── agent_01_学霸/
-│   └── ...
-├── tests/              # 单元测试
-└── docs/               # 文档
-```
-
-### 5.2 运行测试
-
-```bash
-cd /home/ace09/bots/copaw_09
-python -m pytest tests/ -v
-```
-
-### 5.3 TUI 控制台测试
-
-```bash
-# 交互模式
-python -m copaw_09.app.tui
-
-# 单命令模式
-python -m copaw_09.app.tui -c "brain"
-python -m copaw_09.app.tui -c "gateway"
-python -m copaw_09.app.tui -c "router"
-python -m copaw_09.app.tui -c "agent"
-python -m copaw_09.app.tui -c "all"
-```
-
-TUI 命令:
-| 命令 | 说明 |
-|------|------|
-| brain | 测试脑部模块 |
-| gateway | 测试网关模块 |
-| router | 测试路由模块 |
-| agent | 测试 Agent 管理 |
-| feishu | 测试飞书文档 |
-| all | 测试所有模块 |
-| status | 查看模块状态 |
-| clear | 清屏 |
-| quit | 退出 |
 
 ---
 
@@ -207,19 +228,46 @@ TUI 命令:
 
 ### Q1: 如何添加新的 Agent？
 
-编辑 `agents/registry/__init__.py`，在 `PREDEFINED_AGENTS` 中添加。
+```bash
+cp9 mgr init  # 初始化后自动发现
+```
 
 ### Q2: 如何添加新的渠道？
 
-在 `app/channels/` 下创建新的 Channel 类，继承 `BaseChannel`。
+在配置文件中添加渠道配置：
+
+```yaml
+channels:
+  discord:
+    enabled: true
+    bot_token: "xxx"
+```
 
 ### Q3: 如何配置模型？
 
-在 `app/brain/` 模块中修改 `MODEL_CONFIG`。
+```bash
+cp9 set provider minimax '{"api_key":"xxx","default_model":"minimax-m2.5"}'
+```
 
 ---
 
-## 七、联系支持
+## 七、命令速查表
+
+| 命令 | 说明 |
+|------|------|
+| `cp9 mgr start` | 启动服务 |
+| `cp9 mgr stop` | 停止服务 |
+| `cp9 mgr status` | 查看状态 |
+| `cp9 get <type> <key>` | 获取资源 |
+| `cp9 set <type> <key> <json>` | 设置资源 |
+| `cp9 list <type>s` | 列出资源 |
+| `cp9 test agent -id 00 -msg ""` | 测试 Agent |
+| `cp9 test channel feishu send -msg ""` | 测试 Channel |
+| `cp9 test provider minimax -model '' -msg ""` | 测试 Provider |
+
+---
+
+## 八、联系支持
 
 - 问题反馈: GitHub Issues
 - 功能建议: 联系维护者

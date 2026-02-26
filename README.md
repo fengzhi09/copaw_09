@@ -55,21 +55,7 @@ Copaw09(cp9) 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑�
 | **01** | 🧠 学霸 | 学术搜索、论文调研、多工具检索 | 理性严谨、证据充分 |
 | **02** | 💻 编程高手 | 代码开发、工具链检查、技术调研 | 逻辑缜密、结构化 |
 | **03** | 🎨 创意青年 | 文字创作、绘画提示词、视频脚本 | 发散思维、积极执行 |
-| **04** | 📊 统计学长 | 每日复盘、知识收藏、总结启发 | 善于倾听、归纳整理 |
-
----
-
-## 🔗 Channels（消息渠道）
-
-| 渠道 | 协议 | 状态 |
-|------|------|------|
-| 飞书 | WebSocket | 🔶 开发中 |
-| 钉钉 | WebHook | ⏳ 待开发 |
-| QQ | OneBot | ⏳ 待开发 |
-| Discord | Bot API | ⏳ 待开发 |
-| 电报 | Bot API | ⏳ 待开发 |
-
-**事件过滤**：支持忽略指定事件类型、用户、关键词
+| **04** | 📊 统计学长 | 每日复盘，知识收藏、总结启发 | 善于倾听、归纳整理 |
 
 ---
 
@@ -82,56 +68,106 @@ git clone https://github.com/fengzhi09/lhl_copaw_prjs.git
 cd lhl_copaw_prjs/copaw
 ```
 
-### 2. 启动 PostgreSQL
+### 2. 安装依赖
 
 ```bash
-docker run -d \
-  --name copaw-db \
-  -e POSTGRES_DB=copaw \
-  -e POSTGRES_USER=copaw \
-  -e POSTGRES_PASSWORD=your_password \
-  -p 5432:5432 \
-  -v ./data:/var/lib/postgresql/data \
-  postgres:16-alpine
+conda create -n cp9 python=3.12
+conda activate cp9
+pip install -r requirements.txt
 ```
 
 ### 3. 配置环境
 
 ```bash
-cp config.example.yaml config.yaml
-vim config.yaml
+# 创建配置目录
+mkdir -p ~/.cp9
+
+# 复制配置
+cp config.example.yaml ~/.cp9/config.yaml
+
+# 编辑配置
+vim ~/.cp9/config.yaml
 ```
 
-### 4. 启动服务
+### 4. 使用 CLI
 
 ```bash
-cp9 dev              # 开发模式
-cp9 start --daemon  # 生产模式
+# 查看帮助
+cp9 --help
+
+# 初始化
+cp9 mgr init -c ~/.cp9/config.yaml
+
+# 启动服务（后台运行）
+cp9 mgr start -c ~/.cp9/config.yaml
+
+# 查看状态
+cp9 mgr status
+
+# 测试 Agent
+cp9 test agent -id 00 -msg "你好"
+
+# 列出所有 Agent
+cp9 list agents
+```
+
+---
+
+## 📖 CLI 命令
+
+### 管理命令
+
+```bash
+cp9 mgr start -c ~/.cp9/config.yaml   # 启动服务
+cp9 mgr stop                          # 停止服务
+cp9 mgr status                        # 查看状态
+cp9 mgr init -c ~/.cp9/config.yaml   # 初始化配置
+```
+
+### 查询命令
+
+```bash
+cp9 get agent 00              # 获取 Agent 信息
+cp9 get channel feishu       # 获取渠道信息
+cp9 get provider minimax     # 获取 Provider 信息
+cp9 status agent             # 查看 Agent 状态
+```
+
+### 设置命令
+
+```bash
+cp9 set agent 05 '{"name":"学术助手","role":"academic"}'
+cp9 set channel feishu '{"enabled":true}'
+```
+
+### 列表命令
+
+```bash
+cp9 list agents
+cp9 list channels
+cp9 list providers
+cp9 list crons
+```
+
+### 测试命令
+
+```bash
+cp9 test agent -id 00 -msg "搜索论文"           # 测试 Agent
+cp9 test channel feishu send -msg "Hello"       # 测试 Channel
+cp9 test provider minimax -model 'minimax-m2.5' -msg "你好"  # 测试 Provider
+cp9 test sensor dispatch -msg "搜索"            # 测试 Sensor
+cp9 test skill feishu-doc -msg "列出知识库"     # 测试 Skill
+cp9 test cron add -agent 01 -msg "日报" -cron "0 9 * * *"  # 添加 Cron
 ```
 
 ---
 
 ## 📖 文档
 
+- [📑 CLI 命令手册](./CLI.md) - 完整命令参考
 - [📑 设计文档](./DESIGN.md) - 完整设计规范 (24 章)
 - [🏗️ 架构文档](./ARCHITECTURE.md) - 系统架构详解
 - [🗺️ 路线图](./ROADMAP.md) - 开发计划
-
----
-
-## 📊 命令
-
-```bash
-cp9                      # 启动系统
-cp9 status               # 查看状态
-cp9 list                 # 列出 Agent
-cp9 create <需求>        # 创建新 Agent
-cp9 credit               # 查看 Credit
-
-# 定时任务
-cp9 cron add "0 18 * * *" daily_report      # 每日 18:00 日报
-cp9 cron add "0 21 * * */3" dinner_meeting # 每 3 天 21:00 晚餐会
-```
 
 ---
 
