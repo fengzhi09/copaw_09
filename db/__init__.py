@@ -137,7 +137,7 @@ class LongTermMemory(Base):
     title = Column(String(200))
     content = Column(Text)
     tags = Column(JSON, default=list)
-    # embedding = Column(VECTOR(1536))  # 向量索引，需要 pgvector 扩展
+    embedding = Column(VECTOR(1536))  # 向量索引，需要 pgvector 扩展
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -265,3 +265,64 @@ class DatabaseCommands:
                 return {"status": "connected", "database": "ok"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
+
+
+# ==================== Vector Search ====================
+
+def search_by_vector(
+    embedding: list,
+    limit: int = 5,
+    agent_id: str = None
+) -> list:
+    """
+    Search long-term memory by vector embedding.
+    
+    Args:
+        embedding: Vector embedding to search
+        limit: Number of results
+        agent_id: Filter by agent ID
+    
+    Returns:
+        List of matching memories
+    """
+    from sqlalchemy import text
+    
+    with session_scope() as session:
+        query = """
+            SELECT id, agent_id, title, content, tags, 
+                   1 - (embedding <=> :embedding) as similarity
+            FROM long_term_memory
+            WHERE embedding IS NOT NULL
+        """
+        
+        params = {"embedding": embedding, "limit": limit}
+        
+        if agent_id:
+            query += " AND agent_id = :agent_id"
+            params["agent_id"] = agent_id
+        
+        query += " ORDER BY embedding <=> :embedding LIMIT :limit"
+        
+        result = session.execute(text(query), params)
+        return [
+            {
+                "id": row[0],
+                "agent_id": row[1],
+                "title": row[2],
+                "content": row[3],
+                "tags": row[4],
+                "similarity": row[5]
+            }
+            for row in result
+        ]
+
+
+def add_embedding(memory_id: int, embedding: list) -> None:
+    """Add vector embedding to a long-term memory."""
+    from sqlalchemy import text
+    
+    with session_scope() as session:
+        session.execute(
+            text("UPDATE long_term_memory SET embedding = :embedding WHERE id = :id"),
+            {"embedding": embedding, "id": memory_id}
+        )

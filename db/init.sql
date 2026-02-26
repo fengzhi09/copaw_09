@@ -1,4 +1,4 @@
--- PostgreSQL initialization script for Copaw
+-- PostgreSQL initialization script for Copaw with pgvector
 
 -- Create database (run as postgres superuser)
 -- CREATE USER copaw WITH PASSWORD 'your_secure_password';
@@ -8,7 +8,8 @@
 -- Connect to copaw database
 \c copaw
 
--- Enable UUID extension
+-- Enable pgvector extension
+CREATE EXTENSION IF NOT EXISTS "vector";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Agents table
@@ -31,13 +32,14 @@ CREATE TABLE IF NOT EXISTS short_term_memory (
     expires_at TIMESTAMP
 );
 
--- Long term memory
+-- Long term memory (with vector embedding)
 CREATE TABLE IF NOT EXISTS long_term_memory (
     id SERIAL PRIMARY KEY,
     agent_id VARCHAR(10) REFERENCES agents(id),
     title VARCHAR(200),
     content TEXT,
     tags TEXT[],
+    embedding vector(1536),  -- pgvector for semantic search
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -99,6 +101,7 @@ CREATE TABLE IF NOT EXISTS configs (
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_short_term_agent_session ON short_term_memory(agent_id, session_id);
 CREATE INDEX IF NOT EXISTS idx_long_term_agent ON long_term_memory(agent_id);
+CREATE INDEX IF NOT EXISTS idx_long_term_embedding ON long_term_memory USING ivfflat (embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS idx_trace_traceid ON trace_logs(trace_id);
 CREATE INDEX IF NOT EXISTS idx_credit_agent_date ON credit_logs(agent_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_conversation_user ON conversations(user_id, created_at);

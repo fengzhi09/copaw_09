@@ -1,8 +1,8 @@
-# Copaw PostgreSQL Docker Compose
+# Copaw PostgreSQL with pgvector Docker Compose
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16-alpine
     container_name: copaw-db
     restart: unless-stopped
     environment:
@@ -23,9 +23,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
         reservations:
-          memory: 256M
+          memory: 512M
 
 volumes:
   copaw_data:
