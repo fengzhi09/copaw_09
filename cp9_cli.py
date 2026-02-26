@@ -198,7 +198,23 @@ class CommandDispatcher:
             print("  dispatch ✅")
         elif r == "crons":
             print("⏰ Cron:")
-            print("  daily_report   ✅ 0 18 * * *")
+            try:
+                import urllib.request
+                base = "http://127.0.0.1:94179"
+                req = urllib.request.Request(f"{base}/cron/jobs")
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    import json
+                    data = json.loads(resp.read().decode())
+                    if data:
+                        for job in data:
+                            status = "✅" if job.get("enabled") else "❌"
+                            cron = job.get("schedule", {}).get("cron", "N/A")
+                            name = job.get("name", job.get("id", ""))
+                            print(f"  {name:<20} {status} {cron}")
+                    else:
+                        print("  (无定时任务)")
+            except Exception as e:
+                print(f"  获取失败: {e}")
     
     def cmd_test(self):
         t = self.args.target
