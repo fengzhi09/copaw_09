@@ -190,8 +190,35 @@ class CommandDispatcher:
                     from app.brain import Prefrontal
                 except ImportError:
                     from copaw_09.app.brain import Prefrontal
+                
+                # 检查 API key
+                import os
+                api_key = os.environ.get("DASHSCOPE_API_KEY") or os.environ.get("ZHIPU_API_KEY") or os.environ.get("MINIMAX_API_KEY")
+                if not api_key:
+                    print("   ⚠️  警告: 未配置 API key (DASHSCOPE_API_KEY/ZHIPU_API_KEY/MINIMAX_API_KEY)")
+                    print("   仅测试配置加载...")
+                
                 p = Prefrontal(primary_model=md)
                 print(f"   主模型: {p.primary_model}")
+                
+                # 尝试实际调用
+                if api_key:
+                    print("   尝试实际调用...")
+                    import asyncio
+                    async def call_api():
+                        try:
+                            result = await p.think(msg)
+                            return result
+                        except Exception as e:
+                            return str(e)
+                    result = asyncio.run(call_api())
+                    if "failed" not in str(result).lower() and "error" not in str(result).lower():
+                        print(f"   ✅ API 调用成功")
+                    else:
+                        print(f"   ⚠️ API 调用失败: {result[:100]}")
+                else:
+                    print("   跳过实际调用 (需要配置 API key)")
+                    
                 print("✅ Provider 测试完成")
             except Exception as e:
                 import traceback
