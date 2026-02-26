@@ -64,15 +64,33 @@ class CommandDispatcher:
     
     def cmd_get(self):
         r, k = self.args.resource, self.args.key
+        
+        # 尝试读取配置文件
+        config_file = Path("/opt/ai_works/copaw/config.json")
+        if not config_file.exists():
+            config_file = Path("~/.copaw/config.json").expanduser()
+        
+        config = {}
+        if config_file.exists():
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            except Exception:
+                pass
+        
         if r == "agent":
             if k == "00":
                 print(json.dumps({"id": "00", "name": "管理高手", "role": "master", "status": "active"}, indent=2))
             else:
                 print(f"Agent {k} 不存在")
         elif r == "channel":
-            print(json.dumps({"feishu": {"enabled": True}, "tui": {"enabled": True}}, indent=2))
+            ch_config = config.get("channels", {}).get(k, {})
+            if ch_config:
+                print(json.dumps({k: ch_config}, indent=2))
+            else:
+                print(json.dumps({"feishu": {"enabled": True}, "tui": {"enabled": True}}, indent=2))
         elif r == "provider":
-            print(json.dumps({"glm-5": {"enabled": True}, "minimax": {"enabled": False}}, indent=2))
+            print(json.dumps({"glm-5": {"enabled": True}, "minimax": {"enabled": True}}, indent=2))
     
     def cmd_set(self):
         r, k, v = self.args.resource, self.args.key, self.args.value
