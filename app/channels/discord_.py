@@ -29,6 +29,7 @@ class DiscordChannel(BaseChannel):
         http_proxy: str,
         http_proxy_auth: str,
         bot_prefix: str,
+        filters: dict = None,
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ):
@@ -42,6 +43,15 @@ class DiscordChannel(BaseChannel):
         self.http_proxy = http_proxy
         self.http_proxy_auth = http_proxy_auth
         self.bot_prefix = bot_prefix
+        
+        # Event filter
+        from .filter import ChannelEventFilter
+        self._filter = ChannelEventFilter(
+            ignore_events=filters.get("ignore_events", []) if filters else [],
+            ignore_users=filters.get("ignore_users", []) if filters else [],
+            ignore_keywords=filters.get("ignore_keywords", []) if filters else [],
+        )
+        
         self._task: Optional[asyncio.Task] = None
         self._client = None
 
@@ -138,6 +148,15 @@ class DiscordChannel(BaseChannel):
                     },
                 )
 
+                # Apply event filter
+                if not self._filter.should_process({
+                    "type": "message",
+                    "user_id": str(message.author.id),
+                    "content": text
+                }):
+                    logger.info(f"discord message filtered: user={message.author}")
+                    return
+                
                 try:
                     request = self.to_agent_request(msg)
                     last_response = None
@@ -227,6 +246,15 @@ class DiscordChannel(BaseChannel):
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ) -> "DiscordChannel":
+        # Extract filters from config
+        filters = None
+        if hasattr(config, 'filters'):
+            filters = {
+                "ignore_events": config.filters.ignore_events if hasattr(config.filters, 'ignore_events') else [],
+                "ignore_users": config.filters.ignore_users if hasattr(config.filters, 'ignore_users') else [],
+                "ignore_keywords": config.filters.ignore_keywords if hasattr(config.filters, 'ignore_keywords') else [],
+            }
+        
         return cls(
             process=process,
             enabled=config.enabled,
@@ -234,6 +262,7 @@ class DiscordChannel(BaseChannel):
             http_proxy=config.http_proxy,
             http_proxy_auth=config.http_proxy_auth or "",
             bot_prefix=config.bot_prefix or "[BOT] ",
+            filters=filters,
             on_reply_sent=on_reply_sent,
             show_tool_details=show_tool_details,
         )

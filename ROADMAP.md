@@ -66,12 +66,12 @@
 
 | 功能 | 状态 | 优先级 |
 |------|------|--------|
-| 飞书 WebSocket | ✅ 过滤器已集成 | P0 |
-| 钉钉 WebHook | ⏳ 待开发 | P1 |
-| QQ OneBot | ⏳ 待开发 | P1 |
-| Discord Bot | ⏳ 待开发 | P1 |
+| 飞书 WebSocket | ✅ 已集成 | P0 |
+| 钉钉 WebHook | ✅ 已集成 | P1 |
+| QQ OneBot | ✅ 已集成 | P1 |
+| Discord Bot | ✅ 已集成 | P1 |
 | 电报 Bot | ⏳ 待开发 | P1 |
-| 事件过滤 | ✅ 已集成飞书 | P1 |
+| 事件过滤 | ✅ 已集成 | P1 |
 
 ### 2.2 Agent 能力
 

@@ -408,6 +408,16 @@ class _DingTalkChannelHandler(dingtalk_stream.ChatbotHandler):
                 content=content,
                 meta=meta,
             )
+            
+            # Apply event filter
+            if not self._filter.should_process({
+                "type": "message",
+                "user_id": sender,
+                "content": text
+            }):
+                logger.info(f"dingtalk message filtered: user={sender}")
+                return dingtalk_stream.AckMessage.STATUS_OK, "ok"
+            
             logger.info(f"recv from={sender} text={text[:100]}")
             self._emit_incoming_threadsafe(msg)
 
@@ -451,6 +461,7 @@ class DingTalkChannel(BaseChannel):
         client_id: str,
         client_secret: str,
         bot_prefix: str,
+        filters: dict = None,
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ):
@@ -463,6 +474,14 @@ class DingTalkChannel(BaseChannel):
         self.client_id = client_id
         self.client_secret = client_secret
         self.bot_prefix = bot_prefix
+        
+        # Event filter
+        from .filter import ChannelEventFilter
+        self._filter = ChannelEventFilter(
+            ignore_events=filters.get("ignore_events", []) if filters else [],
+            ignore_users=filters.get("ignore_users", []) if filters else [],
+            ignore_keywords=filters.get("ignore_keywords", []) if filters else [],
+        )
 
         self._client: Optional[dingtalk_stream.DingTalkStreamClient] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
@@ -502,12 +521,22 @@ class DingTalkChannel(BaseChannel):
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ) -> "DingTalkChannel":
+        # Extract filters from config
+        filters = None
+        if hasattr(config, 'filters'):
+            filters = {
+                "ignore_events": config.filters.ignore_events if hasattr(config.filters, 'ignore_events') else [],
+                "ignore_users": config.filters.ignore_users if hasattr(config.filters, 'ignore_users') else [],
+                "ignore_keywords": config.filters.ignore_keywords if hasattr(config.filters, 'ignore_keywords') else [],
+            }
+        
         return cls(
             process=process,
             enabled=config.enabled,
             client_id=config.client_id or "",
             client_secret=config.client_secret or "",
             bot_prefix=config.bot_prefix or "[BOT] ",
+            filters=filters,
             on_reply_sent=on_reply_sent,
             show_tool_details=show_tool_details,
         )

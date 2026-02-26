@@ -302,6 +302,7 @@ class QQChannel(BaseChannel):
         app_id: str,
         client_secret: str,
         bot_prefix: str = "",
+        filters: dict = None,
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ):
@@ -314,6 +315,14 @@ class QQChannel(BaseChannel):
         self.app_id = app_id
         self.client_secret = client_secret
         self.bot_prefix = bot_prefix
+        
+        # Event filter
+        from .filter import ChannelEventFilter
+        self._filter = ChannelEventFilter(
+            ignore_events=filters.get("ignore_events", []) if filters else [],
+            ignore_users=filters.get("ignore_users", []) if filters else [],
+            ignore_keywords=filters.get("ignore_keywords", []) if filters else [],
+        )
 
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._queue: Optional[asyncio.Queue[Incoming]] = None
@@ -345,12 +354,22 @@ class QQChannel(BaseChannel):
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
     ) -> "QQChannel":
+        # Extract filters from config
+        filters = None
+        if hasattr(config, 'filters'):
+            filters = {
+                "ignore_events": config.filters.ignore_events if hasattr(config.filters, 'ignore_events') else [],
+                "ignore_users": config.filters.ignore_users if hasattr(config.filters, 'ignore_users') else [],
+                "ignore_keywords": config.filters.ignore_keywords if hasattr(config.filters, 'ignore_keywords') else [],
+            }
+        
         return cls(
             process=process,
             enabled=config.enabled,
             app_id=config.app_id or "",
             client_secret=config.client_secret or "",
             bot_prefix=config.bot_prefix or "",
+            filters=filters,
             on_reply_sent=on_reply_sent,
             show_tool_details=show_tool_details,
         )
@@ -674,6 +693,16 @@ class QQChannel(BaseChannel):
                                     "attachments": att,
                                 },
                             )
+                            
+                            # Apply event filter
+                            if not self._filter.should_process({
+                                "type": "c2c",
+                                "user_id": sender,
+                                "content": text
+                            }):
+                                logger.info(f"qq message filtered: user={sender}")
+                                continue
+                            
                             if self._loop and self._queue:
                                 self._loop.call_soon_threadsafe(
                                     self._queue.put_nowait,
