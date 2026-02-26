@@ -181,6 +181,7 @@ class GatewayAuth:
         """检查用户是否在白名单"""
         if not self.allow_from:  # 空白名单表示允许所有
             return True
+        # 移除后变空，也允许所有
         return user_id in self.allow_from
 
 

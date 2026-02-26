@@ -173,6 +173,10 @@ class FeishuChannel(BaseChannel):
 
         # message_id dedup (ordered, trim when over limit)
         self._processed_message_ids: OrderedDict[str, None] = OrderedDict()
+        
+        # 文档管理
+        from .feishu_document import FeishuDocument
+        self._document = FeishuDocument(self)
         # session_id -> (receive_id, receive_id_type) for send
         self._receive_id_store: Dict[str, Tuple[str, str]] = {}
         self._receive_id_lock = asyncio.Lock()

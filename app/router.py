@@ -6,8 +6,7 @@ Agent Router - Agent 路由选择
 """
 
 from typing import Optional, Dict, Any
-from agents.agent_00_管理高手.manager import AgentManager
-from agents.agent_registry import get_registry
+from agents.registry import get_registry
 
 
 class AgentRouter:

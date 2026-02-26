@@ -9,14 +9,17 @@ from typing import Dict, Any, List, Set
 from dataclasses import dataclass, field
 
 
+def _default_ignore_events() -> Set[str]:
+    """默认忽略的事件类型"""
+    return {"heartbeat", "typing", "read_receipt", "ack"}
+
+
 @dataclass
 class GatewayFilter:
     """Gateway 事件过滤器"""
     
-    # 忽略的事件类型
-    ignore_event_types: Set[str] = field(default_factory=lambda: {
-        "heartbeat", "typing", "read_receipt", "ack"
-    })
+    # 忽略的事件类型（使用函数避免共享引用）
+    ignore_event_types: Set[str] = field(default_factory=_default_ignore_events)
     
     # 忽略的用户 ID
     ignore_user_ids: Set[str] = field(default_factory=set)
@@ -40,9 +43,9 @@ class GatewayFilter:
         Returns:
             True = 处理, False = 忽略
         """
-        # 1. 检查事件类型
-        event_type = event.get("type", "")
-        if event_type in self.ignore_event_types:
+        # 1. 检查事件类型（默认为 message，不过滤）
+        event_type = event.get("type", "message")
+        if self.ignore_event_types and event_type in self.ignore_event_types:
             return False
         
         # 2. 检查用户
@@ -52,19 +55,18 @@ class GatewayFilter:
         
         # 3. 检查关键词
         content = str(event.get("content", ""))
-        if content.strip() == "":
+        
+        # 4. 最小长度检查
+        if self.min_content_length > 0 and len(content) < self.min_content_length:
             return False
         
-        # 4. 检查关键词过滤
+        # 5. 关键词过滤
         for keyword in self.ignore_keywords:
             if keyword in content:
                 return False
         
-        # 5. 检查消息长度
-        content_len = len(content)
-        if content_len < self.min_content_length:
-            return False
-        if content_len > self.max_content_length:
+        # 6. 最大长度检查
+        if len(content) > self.max_content_length:
             return False
         
         return True
