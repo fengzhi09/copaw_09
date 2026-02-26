@@ -1,4 +1,4 @@
-# Cp9 设计文档
+# cp9 设计文档
 
 > 版本：v1.0  
 > 日期：2025-02-25  
@@ -47,7 +47,7 @@
 
 ## 一、项目概述
 
-Cp9 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道（飞书、钉钉、QQ、Discord、电报）与用户交互。
+cp9 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道（飞书、钉钉、QQ、Discord、电报）与用户交互。
 
 ---
 
@@ -486,7 +486,7 @@ cp9/
 ### 8.1 主命令
 
 ```bash
-cp9                    # 启动 Cp9 系统
+cp9                    # 启动 cp9 系统
 cp9 status             # 查看系统状态
 cp9 list               # 列出所有 Agent
 cp9 create <需求>      # 创建新 Agent（自然语言）
@@ -1259,7 +1259,7 @@ cp9 db connect
 ```yaml
 # config.yaml
 system:
-  name: Cp9
+  name: cp9
   version: 1.0.0
   env: production
 
@@ -1507,7 +1507,7 @@ dinner_meeting:
     - 经验互相学习
     - 灵感火花碰撞
   channel: "feishu"  # 交流渠道
-  group_name: "Cp9 晚餐会"
+  group_name: "cp9 晚餐会"
 ```
 
 **交流会流程**：

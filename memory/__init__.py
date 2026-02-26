@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Memory System for Cp9 Agents
+Memory System for cp9 Agents
 
 Manages:
 - Short-term memory: Current task context (session-based)

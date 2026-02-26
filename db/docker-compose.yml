@@ -1,4 +1,4 @@
-# Cp9 PostgreSQL with pgvector Docker Compose
+# cp9 PostgreSQL with pgvector Docker Compose
 
 services:
   postgres:
@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: cp9
       POSTGRES_USER: cp9
-      POSTGRES_PASSWORD: Cp9IsBest
+      POSTGRES_PASSWORD: cp9IsBest
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"

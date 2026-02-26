@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Cp9 CLI - 命令行工具
+cp9 CLI - 命令行工具
 
 使用方式:
     cp9 mgr start|stop|status|init
@@ -432,7 +432,7 @@ class CommandDispatcher:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Cp9 CLI")
+    parser = argparse.ArgumentParser(description="cp9 CLI")
     sub = parser.add_subparsers(dest="command", help="命令")
     
     # mgr

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Cp9 CLI - 命令行工具
+cp9 CLI - 命令行工具
 
 使用方式:
     cp9 mgr start|stop|status|init [-c config]
@@ -77,7 +77,7 @@ def echo_table(headers: list, rows: list):
 @click.group()
 @click.version_option(version="1.0.0", prog_name="cp9")
 def cli():
-    """Cp9 多 Agent 协作系统 CLI"""
+    """cp9 多 Agent 协作系统 CLI"""
     pass
 
 
@@ -93,7 +93,7 @@ def mgr():
 @click.option("-c", "--config", default=DEFAULT_CONFIG, help="配置文件路径")
 def mgr_start(config):
     """启动服务 (后台运行)"""
-    click.echo(f"🚀 启动 Cp9 服务...")
+    click.echo(f"🚀 启动 cp9 服务...")
     
     # 检查配置
     cfg_path = Path(os.path.expanduser(config))
@@ -136,7 +136,7 @@ def mgr_init(config):
     path.parent.mkdir(parents=True, exist_ok=True)
     
     # 默认配置
-    default_config = """# Cp9 配置文件
+    default_config = """# cp9 配置文件
 app:
   name: cp9
   version: "1.0.0"
@@ -463,7 +463,7 @@ def test_cron(action, agent, id, msg):
 @cli.command("version")
 def version_cmd():
     """查看版本"""
-    click.echo("Cp9 v1.0.0")
+    click.echo("cp9 v1.0.0")
     click.echo("Python: 3.12.0")
 
 

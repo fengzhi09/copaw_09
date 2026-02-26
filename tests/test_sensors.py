@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for Cp9 sensors module
+Tests for cp9 sensors module
 """
 
 import pytest

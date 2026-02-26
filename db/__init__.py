@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-PostgreSQL Database Module for Cp9
+PostgreSQL Database Module for cp9
 
 Tables:
 - agents: Agent 元数据

@@ -1,4 +1,4 @@
--- PostgreSQL initialization script for Cp9 with pgvector
+-- PostgreSQL initialization script for cp9 with pgvector
 
 -- Create database (run as postgres superuser)
 -- CREATE USER cp9 WITH PASSWORD 'your_secure_password';

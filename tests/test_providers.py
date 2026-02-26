@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for Cp9 providers module
+Tests for cp9 providers module
 """
 
 import pytest

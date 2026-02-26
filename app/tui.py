@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Cp9 TUI - 交互式控制台测试工具
+cp9 TUI - 交互式控制台测试工具
 
 使用方法:
     python -m app.tui
@@ -19,12 +19,12 @@ from typing import Optional
 sys.path.insert(0, '/home/ace09/bots')
 
 
-class Cp9TUI(cmd.Cmd):
-    """Cp9 交互式控制台"""
+class cp9TUI(cmd.Cmd):
+    """cp9 交互式控制台"""
     
     intro = """
 ╔═══════════════════════════════════════════════════╗
-║         🤖 Cp9 多 Agent 协作系统                ║
+║         🤖 cp9 多 Agent 协作系统                ║
 ║              交互式测试控制台                      ║
 ╠═══════════════════════════════════════════════════╣
 ║  输入 help 查看命令                                ║
@@ -325,20 +325,20 @@ def main():
     """主函数"""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Cp9 TUI 控制台")
+    parser = argparse.ArgumentParser(description="cp9 TUI 控制台")
     parser.add_argument("--command", "-c", help="执行单个命令后退出")
     parser.add_argument("--quiet", "-q", action="store_true", help="安静模式")
     args = parser.parse_args()
     
     if args.quiet:
         # 静默模式，不显示 intro
-        Cp9TUI().onecmd(args.command or "help")
+        cp9TUI().onecmd(args.command or "help")
     elif args.command:
         # 执行单命令
-        Cp9TUI().onecmd(args.command)
+        cp9TUI().onecmd(args.command)
     else:
         # 交互模式
-        Cp9TUI().cmdloop()
+        cp9TUI().cmdloop()
 
 
 if __name__ == "__main__":

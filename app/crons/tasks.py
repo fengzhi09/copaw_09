@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Predefined Cron Tasks for Cp9
+Predefined Cron Tasks for cp9
 
 定时任务定义：
 - daily_report: 每日 18:00 日报

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cp9 一键安装脚本
+# cp9 一键安装脚本
 # 支持: Linux, macOS, Windows (WSL)
 
 set -e
@@ -139,7 +139,7 @@ create_config_dir() {
     
     # 创建默认配置
     cat > "${config_dir}/config.yaml" << 'EOF'
-# Cp9 配置文件
+# cp9 配置文件
 
 app:
   name: cp9
@@ -251,7 +251,7 @@ main() {
     local pkg_manager=$(detect_package_manager)
     
     echo "========================================"
-    echo "  Cp9 一键安装脚本"
+    echo "  cp9 一键安装脚本"
     echo "========================================"
     echo ""
     info "操作系统: $os"
@@ -305,7 +305,7 @@ uninstall() {
     local venv_path="${HOME}/.cpaw/venv"
     local config_dir="${HOME}/.cp9"
     
-    warn "卸载 Cp9..."
+    warn "卸载 cp9..."
     
     # 停止服务
     if command -v cp9 &> /dev/null; then
@@ -333,8 +333,8 @@ show_help() {
     echo "用法: $0 [选项]"
     echo ""
     echo "选项:"
-    echo "  install   安装 Cp9 (默认)"
-    echo "  uninstall 卸载 Cp9"
+    echo "  install   安装 cp9 (默认)"
+    echo "  uninstall 卸载 cp9"
     echo "  help      显示帮助"
 }
 

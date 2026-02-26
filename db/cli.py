@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Database CLI commands for Cp9
+Database CLI commands for cp9
 """
 
 import os

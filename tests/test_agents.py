@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for Cp9 Agent modules
+Tests for cp9 Agent modules
 """
 
 import pytest
