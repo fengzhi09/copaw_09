@@ -143,7 +143,7 @@ app:
 
 server:
   host: "0.0.0.0"
-  port: 9090
+  port: 94179
 
 logging:
   level: "INFO"

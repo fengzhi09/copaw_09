@@ -47,16 +47,69 @@ class CommandDispatcher:
     def cmd_mgr(self):
         a = self.args
         if a.action == "start":
-            print("🚀 启动 Copaw 服务...")
-            print("✅ 服务已启动 (后台运行)")
+            port = a.port or 94179
+            print(f"🚀 启动 Copaw_09 服务 (端口: {port})...")
+            import subprocess
+            import os
+            # 启动 uvicorn 服务
+            cmd = [
+                sys.executable, "-m", "uvicorn",
+                "app._app:app",
+                "--host", "0.0.0.0",
+                "--port", str(port),
+                "--log-level", "info"
+            ]
+            # 设置工作目录
+            cwd = str(PROJECT_ROOT)
+            # 设置环境变量
+            env = os.environ.copy()
+            env["COPAW_WORKING_DIR"] = str(PROJECT_ROOT)
+            
+            # 启动进程
+            proc = subprocess.Popen(
+                cmd,
+                cwd=cwd,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            print(f"✅ 服务已启动 (PID: {proc.pid}, 端口: {port})")
+            print(f"   访问地址: http://localhost:{port}")
         elif a.action == "stop":
-            print("🛑 停止 Copaw 服务...")
-            print("✅ 服务已停止")
+            # 查找并停止 cp9 相关进程
+            import subprocess
+            result = subprocess.run(
+                ["pgrep", "-f", "copaw_09.*uvicorn"],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout:
+                pids = result.stdout.strip().split("\n")
+                for pid in pids:
+                    try:
+                        subprocess.run(["kill", pid])
+                        print(f"🛑 已停止进程 {pid}")
+                    except:
+                        pass
+                print("✅ 服务已停止")
+            else:
+                print("❌ 未找到运行中的 cp9 服务")
         elif a.action == "status":
-            print("📊 Copaw 服务状态:")
-            print("  状态: 运行中")
-            print("  PID: 12345")
-            print("  端口: 8000")
+            import subprocess
+            result = subprocess.run(
+                ["pgrep", "-f", "copaw_09.*uvicorn"],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout:
+                pids = result.stdout.strip().split("\n")
+                print("📊 Copaw_09 服务状态:")
+                print("  状态: 运行中")
+                print(f"  PID: {pids[0]}")
+                print("  端口: 94179")
+            else:
+                print("📊 Copaw_09 服务状态:")
+                print("  状态: 未运行")
         elif a.action == "init":
             cfg = a.config or "~/.cp9/config.yaml"
             print(f"📁 初始化配置: {cfg}")
@@ -370,6 +423,7 @@ def main():
     p = sub.add_parser("mgr", help="服务管理")
     p.add_argument("action", choices=["start","stop","status","init"])
     p.add_argument("-c", "--config")
+    p.add_argument("-p", "--port", type=int, default=94179, help="服务端口 (默认: 94179)")
     
     # get
     p = sub.add_parser("get", help="获取")

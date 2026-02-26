@@ -33,7 +33,7 @@ def create_daily_report_job(
     return CronJobSpec(
         id="daily_report",
         name="每日复盘",
-        enabled=True,
+        enabled=False,  # 默认禁用
         schedule=ScheduleSpec(
             cron="0 18 * * *",
             timezone="Asia/Shanghai"
@@ -70,7 +70,7 @@ def create_dinner_meeting_job(
     return CronJobSpec(
         id="dinner_meeting",
         name="晚餐交流会",
-        enabled=True,
+        enabled=False,  # 默认禁用
         schedule=ScheduleSpec(
             cron="0 21 * * */3",
             timezone="Asia/Shanghai"

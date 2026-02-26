@@ -165,38 +165,38 @@ app.include_router(api_router)
 
 app.include_router(subapi.router, prefix="/agent", tags=["agent"])
 
-# Mount console: root static files (logo.png etc.) then assets, then SPA
-# fallback.
-if os.path.isdir(_CONSOLE_STATIC_DIR):
-    _console_path = Path(_CONSOLE_STATIC_DIR)
-
-    @app.get("/logo.png")
-    def _console_logo():
-        f = _console_path / "logo.png"
-        if f.is_file():
-            return FileResponse(f, media_type="image/png")
-
-        raise HTTPException(status_code=404, detail="Not Found")
-
-    @app.get("/copaw-symbol.svg")
-    def _console_icon():
-        f = _console_path / "copaw-symbol.svg"
-        if f.is_file():
-            return FileResponse(f, media_type="image/svg+xml")
-
-        raise HTTPException(status_code=404, detail="Not Found")
-
-    _assets_dir = _console_path / "assets"
-    if _assets_dir.is_dir():
-        app.mount(
-            "/assets",
-            StaticFiles(directory=str(_assets_dir)),
-            name="assets",
-        )
-
-    @app.get("/{full_path:path}")
-    def _console_spa(full_path: str):
-        if _CONSOLE_INDEX and _CONSOLE_INDEX.exists():
-            return FileResponse(_CONSOLE_INDEX)
-
-        raise HTTPException(status_code=404, detail="Not Found")
+# TODO: [前端开发时启用] Mount console: root static files (logo.png etc.) then assets, then SPA
+# fallback. 当前注释以避免覆盖 API 路由，待前端开发完成后再启用。
+# if os.path.isdir(_CONSOLE_STATIC_DIR):
+#     _console_path = Path(_CONSOLE_STATIC_DIR)
+#
+#     @app.get("/logo.png")
+#     def _console_logo():
+#         f = _console_path / "logo.png"
+#         if f.is_file():
+#             return FileResponse(f, media_type="image/png")
+#
+#         raise HTTPException(status_code=404, detail="Not Found")
+#
+#     @app.get("/copaw-symbol.svg")
+#     def _console_icon():
+#         f = _console_path / "copaw-symbol.svg"
+#         if f.is_file():
+#             return FileResponse(f, media_type="image/svg+xml")
+#
+#         raise HTTPException(status_code=404, detail="Not Found")
+#
+#     _assets_dir = _console_path / "assets"
+#     if _assets_dir.is_dir():
+#         app.mount(
+#             "/assets",
+#             StaticFiles(directory=str(_assets_dir)),
+#             name="assets",
+#         )
+#
+#     @app.get("/{full_path:path}")
+#     def _console_spa(full_path: str):
+#         if _CONSOLE_INDEX and _CONSOLE_INDEX.exists():
+#             return FileResponse(_CONSOLE_INDEX)
+#
+#         raise HTTPException(status_code=404, detail="Not Found")
