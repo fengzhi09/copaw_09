@@ -308,7 +308,8 @@ class CommandDispatcher:
             msg = self.args.msg or "任务"
             print(f"🧪 Cron {act}: Agent {aid}, 消息: {msg}")
             try:
-                import json  # 确保 json 已导入
+                import json
+                import os  # 添加 os 导入
                 
                 # 直接读取 jobs.json 文件（使用 /tmp 或项目目录）
                 jobs_file = PROJECT_ROOT / "data" / "jobs.json"
