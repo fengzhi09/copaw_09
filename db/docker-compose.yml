@@ -1,4 +1,4 @@
-# Copaw PostgreSQL with pgvector Docker Compose
+# Cp9 PostgreSQL with pgvector Docker Compose
 
 services:
   postgres:

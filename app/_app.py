@@ -121,14 +121,14 @@ app.add_middleware(
 )
 
 
-# Console static dir: env, or copaw package data (console), or cwd.
+# Console static dir: env, or cp9 package data (console), or cwd.
 _CONSOLE_STATIC_ENV = "COPAW_CONSOLE_STATIC_DIR"
 
 
 def _resolve_console_static_dir() -> str:
     if os.environ.get(_CONSOLE_STATIC_ENV):
         return os.environ[_CONSOLE_STATIC_ENV]
-    # Shipped dist lives in copaw package as static data (not a Python pkg).
+    # Shipped dist lives in cp9 package as static data (not a Python pkg).
     pkg_dir = Path(__file__).resolve().parent.parent
     candidate = pkg_dir / "console"
     if candidate.is_dir() and (candidate / "index.html").exists():
@@ -178,9 +178,9 @@ app.include_router(subapi.router, prefix="/agent", tags=["agent"])
 #
 #         raise HTTPException(status_code=404, detail="Not Found")
 #
-#     @app.get("/copaw-symbol.svg")
+#     @app.get("/cp9-symbol.svg")
 #     def _console_icon():
-#         f = _console_path / "copaw-symbol.svg"
+#         f = _console_path / "cp9-symbol.svg"
 #         if f.is_file():
 #             return FileResponse(f, media_type="image/svg+xml")
 #

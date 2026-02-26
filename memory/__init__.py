@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Memory System for Copaw Agents
+Memory System for Cp9 Agents
 
 Manages:
 - Short-term memory: Current task context (session-based)
@@ -24,7 +24,7 @@ class MemoryStore:
     """File-based memory storage (fallback when DB is not available)"""
     
     def __init__(self, base_path: str = None):
-        self.base_path = Path(base_path or "~/.copaw/memory")
+        self.base_path = Path(base_path or "~/.cp9/memory")
         self.base_path.mkdir(parents=True, exist_ok=True)
     
     def _get_short_term_path(self, agent_id: str, session_id: str) -> Path:

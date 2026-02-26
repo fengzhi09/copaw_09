@@ -1,12 +1,12 @@
--- PostgreSQL initialization script for Copaw with pgvector
+-- PostgreSQL initialization script for Cp9 with pgvector
 
 -- Create database (run as postgres superuser)
--- CREATE USER copaw WITH PASSWORD 'your_secure_password';
--- CREATE DATABASE copaw OWNER copaw;
--- GRANT ALL PRIVILEGES ON DATABASE copaw TO copaw;
+-- CREATE USER cp9 WITH PASSWORD 'your_secure_password';
+-- CREATE DATABASE cp9 OWNER cp9;
+-- GRANT ALL PRIVILEGES ON DATABASE cp9 TO cp9;
 
--- Connect to copaw database
-\c copaw
+-- Connect to cp9 database
+\c cp9
 
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS "vector";
@@ -116,5 +116,5 @@ INSERT INTO agents (id, name, role, status) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Grant permissions
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO copaw;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO copaw;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO cp9;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO cp9;

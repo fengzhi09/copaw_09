@@ -17,11 +17,11 @@ def get_config_path() -> Path:
         return Path(config_path)
     
     # 默认路径
-    default_path = Path.home() / ".copaw_mgr.yaml"
+    default_path = Path.home() / ".cp9_mgr.yaml"
     if default_path.exists():
         return default_path
     
-    return Path("/opt/ai_works/copaw/config.yaml")
+    return Path("/opt/ai_works/cp9/config.yaml")
 
 
 # 尝试加载 YAML 配置
@@ -59,7 +59,7 @@ class FeishuChannelConfig:
     bot_prefix: str = "/ai"
     encrypt_key: str = ""
     verification_token: str = ""
-    media_dir: str = "~/.copaw/media"
+    media_dir: str = "~/.cp9/media"
     filters: dict = field(default_factory=dict)
 
 

@@ -1,6 +1,6 @@
-# Copaw CLI 命令手册
+# Cp9 CLI 命令手册
 
-> Copaw 多 Agent 协作系统命令行工具
+> Cp9 多 Agent 协作系统命令行工具
 
 ---
 
@@ -50,10 +50,10 @@ cp9 mgr start -c ~/.cp9/config.yaml
 
 # 示例
 $ cp9 mgr start
-✅ Copaw 服务已启动 (PID: 12345)
+✅ Cp9 服务已启动 (PID: 12345)
 
-$ cp9 mgr start -c /etc/copaw/config.yaml
-✅ Copaw 服务已启动 (PID: 12346)
+$ cp9 mgr start -c /etc/cp9/config.yaml
+✅ Cp9 服务已启动 (PID: 12346)
 ```
 
 #### 停止服务
@@ -63,7 +63,7 @@ cp9 mgr stop
 
 # 示例
 $ cp9 mgr stop
-✅ Copaw 服务已停止
+✅ Cp9 服务已停止
 ```
 
 #### 查看状态
@@ -175,7 +175,7 @@ cp9 version
 
 # 示例
 $ cp9 version
-Copaw v1.0.0
+Cp9 v1.0.0
 Python: 3.12.0
 Config: ~/.cp9/config.yaml
 ```

@@ -1,4 +1,4 @@
-# Copaw 🐾
+# Cp9 🐾
 
 > 多 Agent 智能协作系统
 
@@ -9,7 +9,7 @@
 
 ## 一、系统简介
 
-Copaw (cp9) 是一个多 Agent 协作系统，包含：
+Cp9 (cp9) 是一个多 Agent 协作系统，包含：
 
 | Agent | 编号 | 职责 |
 |-------|------|------|
@@ -26,10 +26,10 @@ Copaw (cp9) 是一个多 Agent 协作系统，包含：
 ### 2.1 安装
 
 ```bash
-git clone https://github.com/lhl_copaw/copaw_09.git
-cd copaw_09
-conda create -n copaw python=3.12
-conda activate copaw
+git clone https://github.com/lhl_cp9/cp9.git
+cd cp9
+conda create -n cp9 python=3.12
+conda activate cp9
 pip install -r requirements.txt
 ```
 
@@ -134,7 +134,7 @@ cp9 test cron del -id daily
 
 ```yaml
 app:
-  name: copaw
+  name: cp9
   version: "1.0"
 
 channels:

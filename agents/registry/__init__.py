@@ -45,7 +45,7 @@ class AgentRegistry:
     }
     
     def __init__(self, agents_dir: str = None):
-        self.agents_dir = Path(agents_dir or "~/.copaw/agents")
+        self.agents_dir = Path(agents_dir or "~/.cp9/agents")
         self.agents_dir = self.agents_dir.expanduser()
     
     def get_agent(self, agent_id: str) -> Optional[Dict[str, Any]]:

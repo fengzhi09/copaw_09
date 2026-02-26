@@ -13,7 +13,7 @@ class TestThalamusIntentRecognition:
     
     def test_intent_type_enum(self):
         """测试意图类型枚举"""
-        from copaw_09.app.brain.thalamus import IntentType
+        from cp9.app.brain.thalamus import IntentType
         
         assert IntentType.SEARCH.value == "search"
         assert IntentType.CODE.value == "code"
@@ -22,7 +22,7 @@ class TestThalamusIntentRecognition:
     
     def test_thalamus_creation(self):
         """测试丘脑创建"""
-        from copaw_09.app.brain.thalamus import Thalamus
+        from cp9.app.brain.thalamus import Thalamus
         
         thalamus = Thalamus()
         assert thalamus is not None
@@ -30,7 +30,7 @@ class TestThalamusIntentRecognition:
     
     def test_understand_intent_search(self):
         """测试搜索意图识别"""
-        from copaw_09.app.brain.thalamus import Thalamus, IntentType
+        from cp9.app.brain.thalamus import Thalamus, IntentType
         
         thalamus = Thalamus()
         result = thalamus.understand_intent("帮我搜索一下机器学习的论文")
@@ -40,7 +40,7 @@ class TestThalamusIntentRecognition:
     
     def test_understand_intent_code(self):
         """测试编程意图识别"""
-        from copaw_09.app.brain.thalamus import Thalamus, IntentType
+        from cp9.app.brain.thalamus import Thalamus, IntentType
         
         thalamus = Thalamus()
         result = thalamus.understand_intent("写一个Python代码")
@@ -50,7 +50,7 @@ class TestThalamusIntentRecognition:
     
     def test_understand_intent_create(self):
         """测试创作意图识别"""
-        from copaw_09.app.brain.thalamus import Thalamus, IntentType
+        from cp9.app.brain.thalamus import Thalamus, IntentType
         
         thalamus = Thalamus()
         result = thalamus.understand_intent("帮我写一段文案")
@@ -60,7 +60,7 @@ class TestThalamusIntentRecognition:
     
     def test_understand_intent_manage(self):
         """测试管理意图识别"""
-        from copaw_09.app.brain.thalamus import Thalamus, IntentType
+        from cp9.app.brain.thalamus import Thalamus, IntentType
         
         thalamus = Thalamus()
         result = thalamus.understand_intent("创建一个新的Agent")
@@ -70,7 +70,7 @@ class TestThalamusIntentRecognition:
     
     def test_understand_intent_stats(self):
         """测试统计意图识别"""
-        from copaw_09.app.brain.thalamus import Thalamus, IntentType
+        from cp9.app.brain.thalamus import Thalamus, IntentType
         
         thalamus = Thalamus()
         result = thalamus.understand_intent("查看本月成本统计")
@@ -80,7 +80,7 @@ class TestThalamusIntentRecognition:
     
     def test_route_message(self):
         """测试消息路由"""
-        from copaw_09.app.brain.thalamus import Thalamus
+        from cp9.app.brain.thalamus import Thalamus
         
         thalamus = Thalamus()
         
@@ -106,7 +106,7 @@ class TestThalamusIntentRecognition:
     
     def test_extract_entities(self):
         """测试实体提取"""
-        from copaw_09.app.brain.thalamus import Thalamus
+        from cp9.app.brain.thalamus import Thalamus
         
         thalamus = Thalamus()
         
@@ -127,7 +127,7 @@ class TestThalamusMemory:
     
     def test_add_memory(self):
         """测试添加记忆"""
-        from copaw_09.app.brain.thalamus import Thalamus, MemoryItem
+        from cp9.app.brain.thalamus import Thalamus, MemoryItem
         
         thalamus = Thalamus()
         item = MemoryItem(
@@ -142,7 +142,7 @@ class TestThalamusMemory:
     
     def test_retrieve_memory(self):
         """测试检索记忆"""
-        from copaw_09.app.brain.thalamus import Thalamus, MemoryItem
+        from cp9.app.brain.thalamus import Thalamus, MemoryItem
         
         thalamus = Thalamus()
         
@@ -164,7 +164,7 @@ class TestPrefrontalModelConfig:
     
     def test_model_config(self):
         """测试模型配置"""
-        from copaw_09.app.brain.prefrontal import Prefrontal, ModelProvider
+        from cp9.app.brain.prefrontal import Prefrontal, ModelProvider
         
         config = Prefrontal.MODEL_CONFIG
         
@@ -176,7 +176,7 @@ class TestPrefrontalModelConfig:
     
     def test_prefrontal_creation(self):
         """测试前额叶创建"""
-        from copaw_09.app.brain.prefrontal import Prefrontal
+        from cp9.app.brain.prefrontal import Prefrontal
         
         prefrontal = Prefrontal(primary_model="glm-5")
         
@@ -185,7 +185,7 @@ class TestPrefrontalModelConfig:
     
     def test_prefrontal_no_api_key(self):
         """测试无 API Key"""
-        from copaw_09.app.brain.prefrontal import Prefrontal
+        from cp9.app.brain.prefrontal import Prefrontal
         
         prefrontal = Prefrontal(primary_model="glm-5", api_key="")
         
@@ -198,7 +198,7 @@ class TestPrefrontalDataClasses:
     
     def test_reasoning_result(self):
         """测试推理结果"""
-        from copaw_09.app.brain.prefrontal import ReasoningResult
+        from cp9.app.brain.prefrontal import ReasoningResult
         
         result = ReasoningResult(
             reasoning="推理过程",
@@ -212,7 +212,7 @@ class TestPrefrontalDataClasses:
     
     def test_plan_result(self):
         """测试计划结果"""
-        from copaw_09.app.brain.prefrontal import PlanResult, PlanStep
+        from cp9.app.brain.prefrontal import PlanResult, PlanStep
         
         steps = [
             PlanStep(
@@ -240,7 +240,7 @@ class TestPrefrontalDataClasses:
     
     def test_generation_result(self):
         """测试生成结果"""
-        from copaw_09.app.brain.prefrontal import GenerationResult
+        from cp9.app.brain.prefrontal import GenerationResult
         
         result = GenerationResult(
             text="生成的文本",
@@ -258,7 +258,7 @@ class TestBrainIntegration:
     
     def test_get_thalamus_singleton(self):
         """测试丘脑单例"""
-        from copaw_09.app.brain import get_thalamus
+        from cp9.app.brain import get_thalamus
         
         t1 = get_thalamus()
         t2 = get_thalamus()
@@ -267,7 +267,7 @@ class TestBrainIntegration:
     
     def test_get_prefrontal_singleton(self):
         """测试前额叶单例"""
-        from copaw_09.app.brain import get_prefrontal
+        from cp9.app.brain import get_prefrontal
         
         p1 = get_prefrontal()
         p2 = get_prefrontal()
@@ -276,8 +276,8 @@ class TestBrainIntegration:
     
     def test_thalamus_to_prefrontal_flow(self):
         """测试丘脑到前额叶流程"""
-        from copaw_09.app.brain.thalamus import Thalamus
-        from copaw_09.app.brain.prefrontal import Prefrontal
+        from cp9.app.brain.thalamus import Thalamus
+        from cp9.app.brain.prefrontal import Prefrontal
         
         thalamus = Thalamus()
         prefrontal = Prefrontal()

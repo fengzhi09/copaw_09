@@ -155,9 +155,9 @@ def _load_from_config_json() -> tuple[dict, ModelSlotConfig]:
     """
     # Try to find config.json in various locations
     possible_paths = [
-        Path(os.environ.get("COPAW_WORKING_DIR", "~/.copaw")) / "config.json",
-        Path.home() / ".copaw" / "config.json",
-        Path("/opt/ai_works/copaw/config.json"),
+        Path(os.environ.get("COPAW_WORKING_DIR", "~/.cp9")) / "config.json",
+        Path.home() / ".cp9" / "config.json",
+        Path("/opt/ai_works/cp9/config.json"),
     ]
     
     for config_path in possible_paths:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Database CLI commands for Copaw
+Database CLI commands for Cp9
 """
 
 import os
@@ -125,7 +125,7 @@ def list_agents():
 @click.option("--port", "-o", default="5432", help="Database port")
 def start(password, port):
     """Start PostgreSQL with Docker (using docker-compose)."""
-    password = password or os.environ.get("COPAW_DB_PASSWORD", "copaw_password")
+    password = password or os.environ.get("COPAW_DB_PASSWORD", "cp9_password")
     
     # Set environment variables
     env = os.environ.copy()
@@ -134,15 +134,15 @@ def start(password, port):
     
     # Check if container already exists
     result = subprocess.run(
-        ["docker", "ps", "-a", "--filter", "name=copaw-db", "--format", "{{.Names}}"],
+        ["docker", "ps", "-a", "--filter", "name=cp9-db", "--format", "{{.Names}}"],
         capture_output=True,
         text=True
     )
     
-    if "copaw-db" in result.stdout:
+    if "cp9-db" in result.stdout:
         # Container exists, start it
         click.echo("Starting existing container...")
-        subprocess.run(["docker", "start", "copaw-db"], check=True)
+        subprocess.run(["docker", "start", "cp9-db"], check=True)
     else:
         # Run with docker-compose
         db_dir = Path(__file__).parent.parent / "db"
@@ -161,8 +161,8 @@ def start(password, port):
             return
     
     click.echo(f"✅ PostgreSQL started on port {port}")
-    click.echo(f"   Database: copaw")
-    click.echo(f"   User: copaw")
+    click.echo(f"   Database: cp9")
+    click.echo(f"   User: cp9")
     click.echo(f"   Password: {password}")
     click.echo(f"   pgvector: enabled")
 
@@ -170,21 +170,21 @@ def start(password, port):
 @db.command()
 def stop():
     """Stop PostgreSQL Docker container."""
-    subprocess.run(["docker", "stop", "copaw-db"], capture_output=True)
+    subprocess.run(["docker", "stop", "cp9-db"], capture_output=True)
     click.echo("✅ PostgreSQL stopped")
 
 
 @db.command()
 def restart():
     """Restart PostgreSQL Docker container."""
-    subprocess.run(["docker", "restart", "copaw-db"], capture_output=True)
+    subprocess.run(["docker", "restart", "cp9-db"], capture_output=True)
     click.echo("✅ PostgreSQL restarted")
 
 
 @db.command()
 def logs():
     """View PostgreSQL logs."""
-    subprocess.run(["docker", "logs", "-f", "copaw-db"])
+    subprocess.run(["docker", "logs", "-f", "cp9-db"])
 
 
 if __name__ == "__main__":

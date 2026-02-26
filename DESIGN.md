@@ -1,4 +1,4 @@
-# Copaw 设计文档
+# Cp9 设计文档
 
 > 版本：v1.0  
 > 日期：2025-02-25  
@@ -47,7 +47,7 @@
 
 ## 一、项目概述
 
-Copaw 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道（飞书、钉钉、QQ、Discord、电报）与用户交互。
+Cp9 是一个多 Agent 协作系统，通过「前额叶-丘脑-小脑」架构实现智能协作。每个 Agent 拥有独立记忆、独立 Credit、独立模型配额，可通过多种渠道（飞书、钉钉、QQ、Discord、电报）与用户交互。
 
 ---
 
@@ -453,7 +453,7 @@ def handle_channel_event(channel: str, event: dict):
 ## 七、Agent 目录结构
 
 ```
-copaw/
+cp9/
 ├── agents/
 │   ├── agent_00_管理高手/
 │   │   ├── .meta.json          # 元数据
@@ -476,7 +476,7 @@ copaw/
 ├── memory/                    # 全局记忆
 ├── channels/                  # 渠道适配器
 ├── models/                    # 模型配置
-└── copaw.py                   # 主入口
+└── cp9.py                   # 主入口
 ```
 
 ---
@@ -486,7 +486,7 @@ copaw/
 ### 8.1 主命令
 
 ```bash
-cp9                    # 启动 Copaw 系统
+cp9                    # 启动 Cp9 系统
 cp9 status             # 查看系统状态
 cp9 list               # 列出所有 Agent
 cp9 create <需求>      # 创建新 Agent（自然语言）
@@ -972,7 +972,7 @@ agents/04_统计学长/memory/long_term/
 ⚠️ 敏感操作确认
 
 Agent 02 正在执行以下操作：
-• 写入文件：/opt/ai_works/copaw/agents/xxx/workspace/main.py
+• 写入文件：/opt/ai_works/cp9/agents/xxx/workspace/main.py
 • 执行命令：pip install xxx
 
 是否确认执行？ [确认] [取消]
@@ -1038,7 +1038,7 @@ TELEGRAM_BOT_TOKEN=xxx
 
 # 系统配置
 LOG_LEVEL=INFO
-DATA_DIR=/opt/ai_works/copaw
+DATA_DIR=/opt/ai_works/cp9
 ```
 
 ### 17.3 启动方式
@@ -1075,12 +1075,12 @@ cp9 status
 ```bash
 # 启动 PostgreSQL 容器
 docker run -d \
-  --name copaw-db \
-  -e POSTGRES_DB=copaw \
-  -e POSTGRES_USER=copaw \
+  --name cp9-db \
+  -e POSTGRES_DB=cp9 \
+  -e POSTGRES_USER=cp9 \
   -e POSTGRES_PASSWORD=your_secure_password \
   -p 5432:5432 \
-  -v /opt/ai_works/copaw/data:/var/lib/postgresql/data \
+  -v /opt/ai_works/cp9/data:/var/lib/postgresql/data \
   postgres:16-alpine
 ```
 
@@ -1090,21 +1090,21 @@ docker run -d \
 |------|------|------|
 | `-p` | 宿主机端口 | `5432:5432` |
 | `-e POSTGRES_PASSWORD` | 数据库密码 | （需修改） |
-| `-v` | 数据持久化目录 | `/opt/ai_works/copaw/data` |
+| `-v` | 数据持久化目录 | `/opt/ai_works/cp9/data` |
 
 **推荐配置**：
 
 ```bash
 # 带密码和健康检查的完整配置
 docker run -d \
-  --name copaw-db \
+  --name cp9-db \
   --restart unless-stopped \
-  -e POSTGRES_DB=copaw \
-  -e POSTGRES_USER=copaw \
+  -e POSTGRES_DB=cp9 \
+  -e POSTGRES_USER=cp9 \
   -e POSTGRES_PASSWORD=your_secure_password \
   -e PGDATA=/var/lib/postgresql/data/pgdata \
   -p 5432:5432 \
-  -v /opt/ai_works/copaw/data:/var/lib/postgresql/data \
+  -v /opt/ai_works/cp9/data:/var/lib/postgresql/data \
   postgres:16-alpine \
   -c max_connections=100 \
   -c shared_buffers=256MB \
@@ -1215,8 +1215,8 @@ CREATE INDEX idx_conversation_user ON conversations(user_id, created_at);
 database:
   host: localhost
   port: 5432
-  name: copaw
-  user: copaw
+  name: cp9
+  user: cp9
   password: ${DB_PASSWORD}
   pool:
     min_size: 5
@@ -1228,7 +1228,7 @@ database:
     enabled: true
     schedule: "0 2 * * *"  # 每天凌晨 2 点
     retention: 7  # 保留 7 天
-    path: /opt/ai_works/copaw/backups
+    path: /opt/ai_works/cp9/backups
 ```
 
 ### 18.5 数据库管理命令
@@ -1259,7 +1259,7 @@ cp9 db connect
 ```yaml
 # config.yaml
 system:
-  name: Copaw
+  name: Cp9
   version: 1.0.0
   env: production
 
@@ -1332,7 +1332,7 @@ mcp:
 logging:
   level: INFO
   format: json
-  output: /var/log/copaw/app.log
+  output: /var/log/cp9/app.log
 
 
 ---
@@ -1507,7 +1507,7 @@ dinner_meeting:
     - 经验互相学习
     - 灵感火花碰撞
   channel: "feishu"  # 交流渠道
-  group_name: "Copaw 晚餐会"
+  group_name: "Cp9 晚餐会"
 ```
 
 **交流会流程**：

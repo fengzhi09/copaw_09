@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Copaw CLI - 命令行工具
+Cp9 CLI - 命令行工具
 
 使用方式:
     cp9 mgr start|stop|status|init
@@ -48,7 +48,7 @@ class CommandDispatcher:
         a = self.args
         if a.action == "start":
             port = a.port or 94179
-            print(f"🚀 启动 Copaw_09 服务 (端口: {port})...")
+            print(f"🚀 启动 Cp9_09 服务 (端口: {port})...")
             import subprocess
             import os
             # 启动 uvicorn 服务
@@ -79,7 +79,7 @@ class CommandDispatcher:
             # 查找并停止 cp9 相关进程
             import subprocess
             result = subprocess.run(
-                ["pgrep", "-f", "copaw_09.*uvicorn"],
+                ["pgrep", "-f", "cp9.*uvicorn"],
                 capture_output=True,
                 text=True
             )
@@ -97,18 +97,18 @@ class CommandDispatcher:
         elif a.action == "status":
             import subprocess
             result = subprocess.run(
-                ["pgrep", "-f", "copaw_09.*uvicorn"],
+                ["pgrep", "-f", "cp9.*uvicorn"],
                 capture_output=True,
                 text=True
             )
             if result.stdout:
                 pids = result.stdout.strip().split("\n")
-                print("📊 Copaw_09 服务状态:")
+                print("📊 Cp9_09 服务状态:")
                 print("  状态: 运行中")
                 print(f"  PID: {pids[0]}")
                 print("  端口: 94179")
             else:
-                print("📊 Copaw_09 服务状态:")
+                print("📊 Cp9_09 服务状态:")
                 print("  状态: 未运行")
         elif a.action == "init":
             cfg = a.config or "~/.cp9/config.yaml"
@@ -119,9 +119,9 @@ class CommandDispatcher:
         r, k = self.args.resource, self.args.key
         
         # 尝试读取配置文件
-        config_file = Path("/opt/ai_works/copaw/config.json")
+        config_file = Path("/opt/ai_works/cp9/config.json")
         if not config_file.exists():
-            config_file = Path("~/.copaw/config.json").expanduser()
+            config_file = Path("~/.cp9/config.json").expanduser()
         
         config = {}
         if config_file.exists():
@@ -231,7 +231,7 @@ class CommandDispatcher:
                 try:
                     from app.brain import Thalamus
                 except ImportError:
-                    from copaw_09.app.brain import Thalamus
+                    from cp9.app.brain import Thalamus
                 thalamus = Thalamus()
                 intent = thalamus.understand_intent(msg)
                 route = thalamus.route_message(msg)
@@ -254,7 +254,7 @@ class CommandDispatcher:
                     from constant import ALL_CHANNELS, get_available_channels
                 except ImportError:
                     sys.path.insert(0, str(PROJECT_ROOT.parent))
-                    from copaw_09.constant import ALL_CHANNELS, get_available_channels
+                    from cp9.constant import ALL_CHANNELS, get_available_channels
                 
                 enabled = get_available_channels()
                 print(f"   可用通道: {ALL_CHANNELS}")
@@ -276,7 +276,7 @@ class CommandDispatcher:
                 try:
                     from app.brain import Prefrontal
                 except ImportError:
-                    from copaw_09.app.brain import Prefrontal
+                    from cp9.app.brain import Prefrontal
                 
                 # 检查 API key
                 import os
@@ -385,7 +385,7 @@ class CommandDispatcher:
                 
                 # 如果 data 目录不可写，使用 /tmp
                 if not os.access(PROJECT_ROOT / "data", os.W_OK):
-                    jobs_file = Path("/tmp/copaw_jobs.json")
+                    jobs_file = Path("/tmp/cp9_jobs.json")
                 
                 if jobs_file.exists():
                     try:
@@ -432,7 +432,7 @@ class CommandDispatcher:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Copaw CLI")
+    parser = argparse.ArgumentParser(description="Cp9 CLI")
     sub = parser.add_subparsers(dest="command", help="命令")
     
     # mgr

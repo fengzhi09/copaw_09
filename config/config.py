@@ -67,7 +67,7 @@ class FeishuConfig(BaseChannelConfig):
     app_secret: str = ""
     encrypt_key: str = ""
     verification_token: str = ""
-    media_dir: str = "~/.copaw/media"
+    media_dir: str = "~/.cp9/media"
     
     # 默认飞书过滤配置
     filters: ChannelFiltersConfig = Field(

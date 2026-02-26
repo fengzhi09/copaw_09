@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 WORKING_DIR = (
-    Path(os.environ.get("COPAW_WORKING_DIR", "~/.copaw"))
+    Path(os.environ.get("COPAW_WORKING_DIR", "~/.cp9"))
     .expanduser()
     .resolve()
 )

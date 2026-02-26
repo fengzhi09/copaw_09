@@ -69,11 +69,11 @@ class ColorFormatter(logging.Formatter):
 
 
 # Top-level name for this package; only loggers under this name are shown.
-LOG_NAMESPACE = "copaw"
+LOG_NAMESPACE = "cp9"
 
 
 def setup_logger(level: int | str = logging.INFO):
-    """Configure logging to only output from this package (copaw), not deps."""
+    """Configure logging to only output from this package (cp9), not deps."""
     log_format = "%(asctime)s | %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
 
@@ -87,7 +87,7 @@ def setup_logger(level: int | str = logging.INFO):
     root.setLevel(logging.WARNING)
     root.handlers.clear()
 
-    # Only attach handler to our namespace so only copaw.* logs are printed.
+    # Only attach handler to our namespace so only cp9.* logs are printed.
     logger = logging.getLogger(LOG_NAMESPACE)
     logger.setLevel(level)
     logger.propagate = False

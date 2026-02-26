@@ -478,7 +478,7 @@ class CoPawAgent(ReActAgent):
         agent_dirs = [
             Path(__file__).parent / f"agent_{agent_id}_" / "system_prompt.md",
             Path(WORKING_DIR) / ".." / "agents" / f"agent_{agent_id}_" / "system_prompt.md",
-            Path.home() / ".copaw" / "agents" / f"agent_{agent_id}_" / "system_prompt.md",
+            Path.home() / ".cp9" / "agents" / f"agent_{agent_id}_" / "system_prompt.md",
         ]
         
         for agent_dir in agent_dirs:

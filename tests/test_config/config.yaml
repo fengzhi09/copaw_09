@@ -1,6 +1,6 @@
 # 测试配置文件
 app:
-  name: copaw_test
+  name: cp9_test
   version: "1.0"
 
 config:
@@ -12,7 +12,7 @@ config:
       bot_prefix: "/ai"
       encrypt_key: ""
       verification_token: ""
-      media_dir: "~/.copaw/media"
+      media_dir: "~/.cp9/media"
       filters:
         ignore_events: []
         ignore_users: []

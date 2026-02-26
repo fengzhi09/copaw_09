@@ -15,7 +15,7 @@ from enum import Enum
 if '/home/ace09/bots' not in sys.path:
     sys.path.insert(0, '/home/ace09/bots')
 
-from copaw_09.app.router import AgentRouter, get_router
+from cp9.app.router import AgentRouter, get_router
 
 
 logger = logging.getLogger("gateway.dispatcher")

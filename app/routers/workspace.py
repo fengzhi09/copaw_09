@@ -100,7 +100,7 @@ async def download_workspace():
     buf = _zip_directory(WORKING_DIR)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    filename = f"copaw_workspace_{timestamp}.zip"
+    filename = f"cp9_workspace_{timestamp}.zip"
 
     return StreamingResponse(
         buf,
@@ -118,7 +118,7 @@ async def download_workspace():
     description=(
         "Upload a zip archive.  Paths present in the zip are merged into "
         "WORKING_DIR (files overwritten, dirs merged).  Paths not in the zip "
-        "are left unchanged (e.g. copaw.db, runtime dirs).  Download packs "
+        "are left unchanged (e.g. cp9.db, runtime dirs).  Download packs "
         "the entire WORKING_DIR; upload only overwrites/merges zip contents."
     ),
 )
@@ -150,7 +150,7 @@ async def upload_workspace(  # pylint: disable=too-many-branches
 
     tmp_dir = None
     try:
-        tmp_dir = Path(tempfile.mkdtemp(prefix="copaw_upload_"))
+        tmp_dir = Path(tempfile.mkdtemp(prefix="cp9_upload_"))
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             zf.extractall(tmp_dir)
 

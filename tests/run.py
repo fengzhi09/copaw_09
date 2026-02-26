@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test runner for Copaw
+Test runner for Cp9
 """
 
 import pytest

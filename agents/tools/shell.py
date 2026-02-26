@@ -13,7 +13,7 @@ from typing import Optional
 from agentscope.tool import ToolResponse
 from agentscope.message import TextBlock
 
-from copaw.constant import WORKING_DIR
+from cp9.constant import WORKING_DIR
 
 
 _HIMALAYA_SEND_PATTERN = re.compile(

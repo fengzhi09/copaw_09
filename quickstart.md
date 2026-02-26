@@ -1,16 +1,16 @@
-# Copaw 快速入门
+# Cp9 快速入门
 
-> Copaw 多 Agent 协作系统
+> Cp9 多 Agent 协作系统
 
 ---
 
 ## 一、安装
 
 ```bash
-git clone https://github.com/lhl_copaw/copaw_09.git
-cd copaw_09
-conda create -n copaw python=3.12
-conda activate copaw
+git clone https://github.com/lhl_cp9/cp9.git
+cd cp9
+conda create -n cp9 python=3.12
+conda activate cp9
 pip install -r requirements.txt
 ```
 

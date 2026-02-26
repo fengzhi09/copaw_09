@@ -1,7 +1,7 @@
 {
   "MINIMAX_API_HOST": "https://api.minimaxi.com/v1",
-  "COPAW_WORKING_DIR": "/opt/ai_works/copaw",
+  "COPAW_WORKING_DIR": "/opt/ai_works/cp9",
   "COPAW_MEDIA_DIR": "/opt/ai_works/media",
-  "COPAW_LOG_DIR": "/home/ace09/.copaw/logs",
+  "COPAW_LOG_DIR": "/home/ace09/.cp9/logs",
   "TAVILY_API_KEY": "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"
 }

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Cost calculation for Copaw models
+Cost calculation for Cp9 models
 """
 
 from typing import Dict

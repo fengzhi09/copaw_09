@@ -12,7 +12,7 @@ from typing import Optional, Dict, Any
 if '/home/ace09/bots' not in sys.path:
     sys.path.insert(0, '/home/ace09/bots')
 
-from copaw_09.agents.registry import get_registry
+from cp9.agents.registry import get_registry
 
 
 class AgentRouter:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for Copaw memory module
+Tests for Cp9 memory module
 """
 
 import pytest

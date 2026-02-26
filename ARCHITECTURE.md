@@ -1,4 +1,4 @@
-# Copaw 架构文档
+# Cp9 架构文档
 
 > 版本：v1.1 | 更新：2025-02-26
 
@@ -388,7 +388,7 @@ nano-banana-pro → dall-e-3 → stable-diffusion
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Copaw Gateway + Agents                           │
+│                    Cp9 Gateway + Agents                           │
 │                    ┌───────────────────┐                            │
 │                    │   Web Admin UI   │                            │
 │                    │   (00 / 04 对话)  │                            │
@@ -412,12 +412,12 @@ nano-banana-pro → dall-e-3 → stable-diffusion
 
 ```bash
 # PostgreSQL
-docker run -d --name copaw-db \
-  -e POSTGRES_DB=copaw \
-  -e POSTGRES_USER=copaw \
+docker run -d --name cp9-db \
+  -e POSTGRES_DB=cp9 \
+  -e POSTGRES_USER=cp9 \
   -e POSTGRES_PASSWORD=your_password \
   -p 5432:5432 \
-  -v /opt/ai_works/copaw/data:/var/lib/postgresql/data \
+  -v /opt/ai_works/cp9/data:/var/lib/postgresql/data \
   postgres:16-alpine
 ```
 

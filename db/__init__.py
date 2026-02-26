@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-PostgreSQL Database Module for Copaw
+PostgreSQL Database Module for Cp9
 
 Tables:
 - agents: Agent 元数据
@@ -48,7 +48,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 # Database URL
 DATABASE_URL = os.environ.get(
     "COPAW_DATABASE_URL",
-    "postgresql://copaw:copaw@localhost:5432/copaw"
+    "postgresql://cp9:cp9@localhost:5432/cp9"
 )
 
 Base = declarative_base()
@@ -61,7 +61,7 @@ def get_database_url() -> str:
     """Get database URL from environment or config."""
     return os.environ.get(
         "COPAW_DATABASE_URL",
-        "postgresql://copaw:copaw@localhost:5432/copaw"
+        "postgresql://cp9:cp9@localhost:5432/cp9"
     )
 
 

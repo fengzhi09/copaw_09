@@ -312,8 +312,8 @@ class MemoryManager(ReMeFs):
             },
             default_memory_store_config={
                 "backend": "chroma",
-                "db_name": "copaw.db",
-                "store_name": "copaw",
+                "db_name": "cp9.db",
+                "store_name": "cp9",
                 "vector_enabled": vector_enabled,
                 "fts_enabled": fts_enabled,
             },

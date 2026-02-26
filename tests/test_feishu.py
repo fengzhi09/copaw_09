@@ -14,7 +14,7 @@ class TestFeishuHelperFunctions:
         """测试从完整 ID 生成短 session ID"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu import _short_session_id_from_full_id
+        from cp9.app.channels.feishu import _short_session_id_from_full_id
         
         # 函数返回实际实现的结果
         result = _short_session_id_from_full_id("ou_1234567890abcdef")
@@ -28,7 +28,7 @@ class TestFeishuHelperFunctions:
         """测试发送者显示字符串"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu import _sender_display_string
+        from cp9.app.channels.feishu import _sender_display_string
         
         # 实际实现返回 "unknown#_xxx" 格式
         result = _sender_display_string("张三", "ou_123")
@@ -41,7 +41,7 @@ class TestFeishuHelperFunctions:
         """测试 JSON 键提取"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu import _extract_json_key
+        from cp9.app.channels.feishu import _extract_json_key
         
         content = '{"key1": "value1", "key2": "value2"}'
         
@@ -53,7 +53,7 @@ class TestFeishuHelperFunctions:
         """测试飞书 Markdown 规范化"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu import _normalize_feishu_md
+        from cp9.app.channels.feishu import _normalize_feishu_md
         
         # 实际实现返回原样
         result = _normalize_feishu_md("**bold**")
@@ -67,14 +67,14 @@ class TestFeishuDocument:
         """测试文档类存在"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu_document import FeishuDocument
+        from cp9.app.channels.feishu_document import FeishuDocument
         assert FeishuDocument is not None
     
     def test_document_methods(self):
         """测试文档类方法存在"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.feishu_document import FeishuDocument
+        from cp9.app.channels.feishu_document import FeishuDocument
         
         # 文件操作
         assert hasattr(FeishuDocument, 'upload_file')
@@ -106,14 +106,14 @@ class TestFeishuFilter:
         """测试过滤器可导入"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.filter import ChannelEventFilter
+        from cp9.app.channels.filter import ChannelEventFilter
         assert ChannelEventFilter is not None
     
     def test_channel_filter_keyword(self):
         """测试关键词过滤"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.filter import ChannelEventFilter
+        from cp9.app.channels.filter import ChannelEventFilter
         
         f = ChannelEventFilter(ignore_keywords=["spam"])
         
@@ -127,7 +127,7 @@ class TestFeishuFilter:
         """测试用户过滤"""
         import sys
         sys.path.insert(0, '/home/ace09/bots')
-        from copaw_09.app.channels.filter import ChannelEventFilter
+        from cp9.app.channels.filter import ChannelEventFilter
         
         f = ChannelEventFilter(ignore_users=["ou_bad"])
         

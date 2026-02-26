@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path
 
 sys.path.insert(0, '/home/ace09/bots')
-from copaw_09.agents.agent_00_管理高手.manager import (
+from cp9.agents.agent_00_管理高手.manager import (
     AgentCreator,
     AgentManager,
     RequirementClarifier,

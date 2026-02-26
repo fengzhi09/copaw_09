@@ -8,7 +8,7 @@ import sys
 import pytest
 from pathlib import Path
 
-# 添加 copaw_09 目录到 sys.path
+# 添加 cp9 目录到 sys.path
 COPAW_DIR = Path(__file__).parent.parent.absolute()
 if str(COPAW_DIR) not in sys.path:
     sys.path.insert(0, str(COPAW_DIR))
@@ -24,7 +24,7 @@ TEST_CONFIG_DIR.mkdir(exist_ok=True)
 if not TEST_CONFIG_FILE.exists():
     test_config = """# 测试配置文件
 app:
-  name: copaw_test
+  name: cp9_test
   version: "1.0"
 
 config:
@@ -36,7 +36,7 @@ config:
       bot_prefix: "/ai"
       encrypt_key: ""
       verification_token: ""
-      media_dir: "~/.copaw/media"
+      media_dir: "~/.cp9/media"
       filters:
         ignore_events: []
         ignore_users: []
@@ -80,8 +80,8 @@ def setup_test_config():
     os.environ["COPAW_CONFIG_PATH"] = str(TEST_CONFIG_FILE)
     
     # 确保正确的 sys.path
-    copaw_dir = Path(__file__).parent.parent.absolute()
-    if str(copaw_dir) not in sys.path:
-        sys.path.insert(0, str(copaw_dir))
+    cp9_dir = Path(__file__).parent.parent.absolute()
+    if str(cp9_dir) not in sys.path:
+        sys.path.insert(0, str(cp9_dir))
     
     yield

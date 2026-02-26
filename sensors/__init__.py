@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Sensors Module for Copaw
+Sensors Module for Cp9
 
 Sensors:
 - print: Image generation (nano-banana-pro)

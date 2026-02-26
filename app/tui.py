@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Copaw TUI - 交互式控制台测试工具
+Cp9 TUI - 交互式控制台测试工具
 
 使用方法:
     python -m app.tui
@@ -19,12 +19,12 @@ from typing import Optional
 sys.path.insert(0, '/home/ace09/bots')
 
 
-class CopawTUI(cmd.Cmd):
-    """Copaw 交互式控制台"""
+class Cp9TUI(cmd.Cmd):
+    """Cp9 交互式控制台"""
     
     intro = """
 ╔═══════════════════════════════════════════════════╗
-║         🤖 Copaw 多 Agent 协作系统                ║
+║         🤖 Cp9 多 Agent 协作系统                ║
 ║              交互式测试控制台                      ║
 ╠═══════════════════════════════════════════════════╣
 ║  输入 help 查看命令                                ║
@@ -32,7 +32,7 @@ class CopawTUI(cmd.Cmd):
 ╚═══════════════════════════════════════════════════╝
 """
     
-    prompt = "(copaw) "
+    prompt = "(cp9) "
     
     def __init__(self):
         super().__init__()
@@ -41,19 +41,19 @@ class CopawTUI(cmd.Cmd):
     def _init_modules(self):
         """初始化模块"""
         try:
-            from copaw_09.app.brain import Thalamus, Prefrontal
-            from copaw_09.app.gateway import GatewayAuth, GatewayFilter
-            from copaw_09.app.router import AgentRouter
-            from copaw_09.agents.agent_00_管理高手 import AgentCreator, AgentManager
-            from copaw_09.app.channels.feishu_document import FeishuDocument
+            from cp9.app.brain import Thalamus, Prefrontal
+            from cp9.app.gateway import GatewayAuth, GatewayFilter
+            from cp9.app.router import AgentRouter
+            from cp9.agents.agent_00_管理高手 import AgentCreator, AgentManager
+            from cp9.app.channels.feishu_document import FeishuDocument
             
             self.thalamus = Thalamus()
             self.prefrontal = Prefrontal()
             self.auth = GatewayAuth()
             self.filter = GatewayFilter()
             self.router = AgentRouter()
-            self.creator = AgentCreator('/tmp/copaw_tui_agents')
-            self.manager = AgentManager('/tmp/copaw_tui_agents')
+            self.creator = AgentCreator('/tmp/cp9_tui_agents')
+            self.manager = AgentManager('/tmp/cp9_tui_agents')
             self.feishu_doc = None  # 需要 channel 实例
             
             self.modules_loaded = True
@@ -325,20 +325,20 @@ def main():
     """主函数"""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Copaw TUI 控制台")
+    parser = argparse.ArgumentParser(description="Cp9 TUI 控制台")
     parser.add_argument("--command", "-c", help="执行单个命令后退出")
     parser.add_argument("--quiet", "-q", action="store_true", help="安静模式")
     args = parser.parse_args()
     
     if args.quiet:
         # 静默模式，不显示 intro
-        CopawTUI().onecmd(args.command or "help")
+        Cp9TUI().onecmd(args.command or "help")
     elif args.command:
         # 执行单命令
-        CopawTUI().onecmd(args.command)
+        Cp9TUI().onecmd(args.command)
     else:
         # 交互模式
-        CopawTUI().cmdloop()
+        Cp9TUI().cmdloop()
 
 
 if __name__ == "__main__":

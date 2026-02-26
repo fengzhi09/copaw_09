@@ -49,7 +49,7 @@ class AgentCreator:
     """Agent 创建器"""
     
     def __init__(self, base_path: str = None):
-        self.base_path = Path(base_path or "~/.copaw/agents")
+        self.base_path = Path(base_path or "~/.cp9/agents")
         self.base_path = self.base_path.expanduser()
         self.base_path.mkdir(parents=True, exist_ok=True)
     
@@ -228,7 +228,7 @@ class AgentManager:
     """Agent 管理器"""
     
     def __init__(self, base_path: str = None):
-        self.base_path = Path(base_path or "~/.copaw/agents")
+        self.base_path = Path(base_path or "~/.cp9/agents")
         self.base_path = self.base_path.expanduser()
     
     def list_agents(self) -> List[Dict[str, Any]]:
